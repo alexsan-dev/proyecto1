@@ -31,7 +31,7 @@ public class Signing extends XFrame {
         XField pass = new XField("Contraseña", getWidth(), true);
         XField confirmPass = new XField("Confimar contraseña", getWidth(), true);
         XButton signingBtn = new XButton("INICIAR SESION", new Color(0,0,0,0), new Color(80,80,80));
-        XButton registerBtn = new XButton("REGISTRARSE", new Color(33,150,243), Color.white);
+        XButton registerBtn = new XButton("REGISTRARSE");
 
         // PROPIEDADES
         user.setBounds(0,10,350,90);

@@ -17,7 +17,7 @@ public class XFrame extends JFrame implements XFrameModel {
         setBounds(0,0,width, height);
 
         // AGREGAR DIMENSIONES
-        setResizable(true);
+        setResizable(false);
         setVisible(true);
 
         // CONFIGURAR FRAME

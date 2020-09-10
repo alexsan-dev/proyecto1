@@ -9,6 +9,17 @@ public class XButton extends JButton {
     private Shape shape;
     Color background, color;
 
+    public XButton(String text){
+        // GLOBAL
+        super(text);
+        this.color = new Color(255, 255, 255);
+        this.background = new Color(33,150,243);
+
+        // PROPIEDADES
+        setProperties();
+    }
+
+
     public XButton(String text, Color background, Color color){
         // GLOBAL
         super(text);

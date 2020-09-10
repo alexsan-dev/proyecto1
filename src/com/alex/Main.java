@@ -2,7 +2,9 @@ package com.alex;
 
 import javax.swing.*;
 
+import com.alex.controllers.UserModelController;
 import com.alex.views.Auth;
+import com.alex.views.MainMenu;
 
 class Main {
 
@@ -18,6 +20,6 @@ class Main {
         }
 
         // INICIAR AUTH
-        new Auth();
+        new MainMenu(new UserModelController("admin", "admin", "admin"));
     }
 }

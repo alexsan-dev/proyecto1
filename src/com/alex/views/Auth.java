@@ -25,7 +25,7 @@ public class Auth extends XFrame {
         XField name = new XField("Nombre de usuario: ", getWidth());
         XField pass = new XField("Contraseña", getWidth(),true);
         XButton register = new XButton("REGISTRARSE", new Color(0,0,0,0), new Color(80,80,80));
-        XButton signin = new XButton("INICIAR SESION", new Color(33,150,243), Color.white);
+        XButton signin = new XButton("INICIAR SESION");
 
         // PROPIEDADES
         name.setBounds(0,10,350,90);
