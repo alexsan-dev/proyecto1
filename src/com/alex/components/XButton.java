@@ -2,6 +2,7 @@ package com.alex.components;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
 
 public class XButton extends JButton {
@@ -16,6 +17,10 @@ public class XButton extends JButton {
 
         // PROPIEDADES
         setProperties();
+    }
+
+    public void onClick(ActionListener action){
+        this.addActionListener(action);
     }
 
     protected void paintComponent(Graphics g) {

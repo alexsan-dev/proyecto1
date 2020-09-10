@@ -3,6 +3,7 @@ package com.alex;
 import javax.swing.*;
 
 import com.alex.views.Auth;
+import com.alex.views.Signing;
 
 class Main {
 
