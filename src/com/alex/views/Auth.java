@@ -1,8 +1,8 @@
 package com.alex.views;
 
 import com.alex.components.*;
-import com.alex.controllers.Signing;
-import com.alex.controllers.User;
+import com.alex.controllers.SigningController;
+import com.alex.controllers.UserModelController;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -28,24 +28,26 @@ public class Auth extends XFrame {
         XButton signin = new XButton("INICIAR SESION", new Color(33,150,243), Color.white);
 
         // PROPIEDADES
-        name.setBounds(0,10,400,90);
-        pass.setBounds(0,100,400,90);
+        name.setBounds(0,10,350,90);
+        pass.setBounds(0,100,350,90);
         register.setBounds(65, 215, 120, 50);
         signin.setBounds(185, 215, 140, 50);
 
         // EVENTOS
         ActionListener login = e -> {
             // CREAR CONTROLADOR DE USUARIOS
-            User user = new User(name.getData(), name.getData(), pass.getData());
-            Signing controller = new Signing(user);
+            UserModelController userController = new UserModelController(name.getData(), name.getData(), pass.getData());
+            SigningController controller = new SigningController(userController, false);
 
             // CERRAR VENTANA
             if(controller.getVerify()) this.dispose();
         };
 
         // FRAME DE INICIAR SESION
-        ActionListener registryFrame = e -> new com.alex.views.Signing();
-
+        ActionListener registryFrame = e -> {
+            this.dispose();
+            new Signing();
+        };
 
         register.onClick(registryFrame);
         signin.onClick(login);

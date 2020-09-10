@@ -5,22 +5,23 @@ import javax.swing.*;
 public class XField extends JPanel {
     public JTextField field;
     public XLabel label;
-    private int width;
     private boolean isPassword;
 
     public XField(String text, int width){
-        this.width = width;
+        setLayout(null);
+        setSize(width,90);
 
         // COMPONENTES
         field = new XInput();
         label = new XLabel(text);
 
         // AGREGAR
-        setComponents(label, field);
+        setComponents();
     }
 
     public XField(String text, int width, boolean isPassword){
-        this.width = width;
+        setLayout(null);
+        setSize(width,90);
         this.isPassword = isPassword;
 
         if(isPassword) {
@@ -29,18 +30,18 @@ public class XField extends JPanel {
             label = new XLabel(text);
 
             // AGREGAR
-            setComponents(label, field);
+            setComponents();
         }
     }
 
-    public void setComponents(JLabel labelS, JTextField fieldS){
+    public void setComponents(){
         // PROPIEDADES
-        labelS.setBounds(25, 0, width - 50, 40);
-        fieldS.setBounds(25, 40,  width - 50, 50);
+        label.setBounds(25, 0, getWidth() - 50, 40);
+        field.setBounds(25, 40,  getWidth() - 50, 50);
 
         // AGREGAR
-        add(labelS);
-        add(fieldS);
+        add(label);
+        add(field);
     }
 
     public String getData(){

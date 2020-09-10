@@ -1,8 +1,11 @@
 package com.alex.views;
 
 import com.alex.components.*;
+import com.alex.controllers.SigningController;
+import com.alex.controllers.UserModelController;
 
 import java.awt.*;
+import java.awt.event.ActionListener;
 
 /**
  * Auth Frame de login y registro
@@ -38,6 +41,25 @@ public class Signing extends XFrame {
 
         signingBtn.setBounds(55, 395, 130, 50);
         registerBtn.setBounds(185, 395, 140, 50);
+
+        // EVENTOS
+        ActionListener signin = (e) ->{
+            new Auth();
+            this.dispose();
+        };
+
+        ActionListener createUser = (e) -> {
+            // CREAR CONTROLADOR DE USUARIOS
+            UserModelController userController = new UserModelController(user.getData(), name.getData(), pass.getData());
+            SigningController controller = new SigningController(userController, true);
+
+            // CERRAR VENTANA
+            if(controller.getVerify()) this.dispose();
+        };
+
+        // LISTENERS
+        signingBtn.onClick(signin);
+        registerBtn.onClick(createUser);
 
         // AGREGAR
         addComponent(user);

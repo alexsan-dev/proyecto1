@@ -1,5 +1,5 @@
 package com.alex.models;
 
-public interface XFrame {
+public interface XFrameModel {
     public default void renderWithin(){}
 }
