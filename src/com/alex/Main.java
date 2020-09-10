@@ -20,6 +20,7 @@ class Main {
         }
 
         // INICIAR AUTH
-        new MainMenu(new UserModelController("admin", "admin", "admin"));
+        new Auth();
+        //new MainMenu(new UserModelController("admin", "admin", "admin"));
     }
 }

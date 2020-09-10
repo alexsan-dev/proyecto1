@@ -18,11 +18,12 @@ public class XFrame extends JFrame implements XFrameModel {
 
         // AGREGAR DIMENSIONES
         setResizable(false);
+        setSize(width, height);
+        setLocationRelativeTo(null);
         setVisible(true);
 
         // CONFIGURAR FRAME
         setTitle(name);
-        setSize(width, height);
     }
 
     public void setHeader(String name, String description) {

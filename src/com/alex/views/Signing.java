@@ -16,11 +16,11 @@ public class Signing extends XFrame {
     /**
      * Constructor iniciar ventana y propiedades iniciales de login
      *
-     * @return
+     *
      */
     public Signing() {
         setFrame("Registro de usuarios", 350, 580);
-        setHeader("Gracias por crear una cuenta", "Inicia sesion si ya tienes una cuenta.");
+        setHeader("Gracias por crear una cuenta", "Inicia sesión si ya tienes una cuenta.");
     }
 
     @Override
@@ -29,8 +29,8 @@ public class Signing extends XFrame {
         XField user = new XField("Usuario: ", getWidth());
         XField name = new XField("Nombre: ", getWidth());
         XField pass = new XField("Contraseña", getWidth(), true);
-        XField confirmPass = new XField("Confimar contraseña", getWidth(), true);
-        XButton signingBtn = new XButton("INICIAR SESION", new Color(0,0,0,0), new Color(80,80,80));
+        XField confirmPass = new XField("Confirmar contraseña", getWidth(), true);
+        XButton signingBtn = new XButton("INICIAR SESIÓN", new Color(0,0,0,0), new Color(80,80,80));
         XButton registerBtn = new XButton("REGISTRARSE");
 
         // PROPIEDADES
@@ -43,22 +43,22 @@ public class Signing extends XFrame {
         registerBtn.setBounds(185, 395, 140, 50);
 
         // EVENTOS
-        ActionListener signin = (e) ->{
+        ActionListener signing = (e) ->{
             new Auth();
             this.dispose();
         };
 
         ActionListener createUser = (e) -> {
             // CREAR CONTROLADOR DE USUARIOS
-            UserModelController userController = new UserModelController(user.getData(), name.getData(), pass.getData());
-            SigningController controller = new SigningController(userController, true);
+            UserModelController userController = new UserModelController(user.getData(), name.getData(), pass.getData(), true);
+            SigningController controller = new SigningController(userController, confirmPass.getData());
 
             // CERRAR VENTANA
             if(controller.getVerify()) this.dispose();
         };
 
         // LISTENERS
-        signingBtn.onClick(signin);
+        signingBtn.onClick(signing);
         registerBtn.onClick(createUser);
 
         // AGREGAR

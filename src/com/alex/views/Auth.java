@@ -36,8 +36,8 @@ public class Auth extends XFrame {
         // EVENTOS
         ActionListener login = e -> {
             // CREAR CONTROLADOR DE USUARIOS
-            UserModelController userController = new UserModelController(name.getData(), name.getData(), pass.getData());
-            SigningController controller = new SigningController(userController, false);
+            UserModelController userController = new UserModelController(name.getData(), name.getData(), pass.getData(), false);
+            SigningController controller = new SigningController(userController);
 
             // CERRAR VENTANA
             if(controller.getVerify()) this.dispose();

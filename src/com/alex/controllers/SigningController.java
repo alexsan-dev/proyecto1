@@ -6,12 +6,21 @@ public class SigningController {
     public UserModelController userController;
     private UserModelController defUserController;
     private Boolean verify;
-    private Boolean isNew;
+    private String pass;
 
-    public SigningController(UserModelController userController, Boolean isNew){
+    public SigningController(UserModelController userController){
         this.userController = userController;
-        this.isNew = isNew;
-        this.defUserController = new UserModelController("admin", "admin", "admin");
+        this.defUserController = new UserModelController("admin", "admin", "admin", false);
+
+        // VERIFICAR Y CREAR
+        verify();
+        createFrame();
+    }
+
+    public SigningController(UserModelController userController, String pass){
+        this.userController = userController;
+        this.pass = pass;
+        this.defUserController = new UserModelController("admin", "admin", "admin", false);
 
         // VERIFICAR Y CREAR
         verify();
@@ -23,14 +32,7 @@ public class SigningController {
     }
 
     public void verify(){
-        // VERIFICAR SI SE CREARA UN USUARIO
-        if(isNew) verify = true;
-        else {
-            // VERIFICAR PRIMERO USUARIO POR DEFECTO
-            if (userController.name.equals(defUserController.name) && userController.pass.equals(defUserController.pass))
-                verify = true;
-            else verify = false;
-        }
+        verify = userController.isNew ? userController.pass.equals(this.pass) : userController.name.equals(defUserController.name) && userController.pass.equals(defUserController.pass);
     }
 
     public void createFrame(){
