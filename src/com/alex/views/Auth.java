@@ -7,9 +7,6 @@ import com.alex.controllers.UserModelController;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
-/**
- * Auth Frame de login y registro
- */
 public class Auth extends XFrame {
     private static final long serialVersionUID = 1L;
 

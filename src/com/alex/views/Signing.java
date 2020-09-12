@@ -7,17 +7,9 @@ import com.alex.controllers.UserModelController;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
-/**
- * Auth Frame de login y registro
- */
 public class Signing extends XFrame {
     private static final long serialVersionUID = 1L;
 
-    /**
-     * Constructor iniciar ventana y propiedades iniciales de login
-     *
-     *
-     */
     public Signing() {
         setFrame("Registro de usuarios", 350, 580);
         setHeader("Gracias por crear una cuenta", "Inicia sesión si ya tienes una cuenta.");

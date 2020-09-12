@@ -2,9 +2,6 @@ package com.alex.components;
 import java.awt.*;
 import javax.swing.*;
 
-/**
- * LABEL
- */
 public class XLabel extends JLabel {
     private static final long serialVersionUID = 1L;
 

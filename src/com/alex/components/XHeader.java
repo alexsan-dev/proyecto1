@@ -3,9 +3,6 @@ package com.alex.components;
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * Header
- */
 public class XHeader extends JPanel {
 
     private static final long serialVersionUID = 1L;

@@ -5,6 +5,7 @@ import javax.swing.*;
 import com.alex.controllers.UserModelController;
 import com.alex.views.Auth;
 import com.alex.views.MainMenu;
+import com.alex.views.ManageClients;
 
 class Main {
 
@@ -20,7 +21,6 @@ class Main {
         }
 
         // INICIAR AUTH
-        new Auth();
-        //new MainMenu(new UserModelController("admin", "admin", "admin"));
+       new ManageClients();
     }
 }

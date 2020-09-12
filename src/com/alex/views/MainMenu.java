@@ -21,6 +21,12 @@ public class MainMenu extends XFrame {
         XButton manageSellBtn = new XButton("Administrar Ventas", new Color(96,125,139), Color.white);
         XButton reportsBtn = new XButton("Reportes");
 
+        // EVENTOS
+        manageClientsBtn.onClick((e) -> {
+            new ManageClients();
+            dispose();
+        });
+
         // POSICION
         manageClientsBtn.setBounds(25,25, 160, 70);
         manageProductsBtn.setBounds(195,25, 160, 70);
