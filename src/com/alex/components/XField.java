@@ -19,6 +19,21 @@ public class XField extends JPanel {
         setComponents();
     }
 
+    public XField(String text, int width, String initialValue){
+        setLayout(null);
+        setSize(width,90);
+
+        // COMPONENTES
+        field = new XInput();
+        label = new XLabel(text);
+
+        // PROPIEDADES
+        field.setText(initialValue);
+
+        // AGREGAR
+        setComponents();
+    }
+
     public XField(String text, int width, boolean isPassword){
         setLayout(null);
         setSize(width,90);

@@ -14,6 +14,8 @@ public class ClientController {
         dataList.add(data);
     }
 
+    public void replaceData(Client data, Client newData) { dataList.replace(data, newData); }
+
     public int getSize(){
         return dataList.getSize();
     }

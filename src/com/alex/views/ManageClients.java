@@ -4,17 +4,21 @@ import com.alex.components.*;
 import com.alex.controllers.ClientController;
 import com.alex.data.Client;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Scanner;
 
 public class ManageClients extends XFrame {
     private final String[] tabsName = { "Clientes", "Editar" };
     private final ClientController clientController;
+    private DefaultTableModel model;
 
     public ManageClients(ClientController clientController){
         // DATOS
@@ -41,6 +45,34 @@ public class ManageClients extends XFrame {
         addComponent(tabs);
     }
 
+    public boolean verifyNIT(int nit, int exclude){
+        // VERIFICAR NIT
+        boolean verifyNIT = true;
+        for (int clientsIndex = 0; clientsIndex < clientController.getSize(); clientsIndex++){
+            if(clientController.get(clientsIndex).nit == nit && (exclude == -1 || clientController.get(clientsIndex).nit != exclude)) {
+                verifyNIT = false;
+                break;
+            }
+        }
+
+        return verifyNIT;
+    }
+
+    public void updateTable(){
+        // LIMPIAR DATOS
+        if (model.getRowCount() > 0) {
+            for (int i = model.getRowCount() - 1; i > -1; i--) {
+                model.removeRow(i);
+            }
+        }
+
+        // ACTUALIZAR DATOS
+        if(clientController != null) {
+            String[] clientRows = clientController.toCsv().split("\n");
+            if(clientController.getSize() > 0) for (String clientRow : clientRows) model.addRow(clientRow.split(","));
+        }
+    }
+
     public void dashboard(XTabPane tabs){
         // DATOS
         String[] columns = { "Nombre", "Edad", "Sexo", "NIT" };
@@ -51,19 +83,16 @@ public class ManageClients extends XFrame {
         chooser.setFileFilter(filter);
 
         // TABLA
-        DefaultTableModel model = new DefaultTableModel(columns, 0);
+        model = new DefaultTableModel(columns, 0);
         XTable table = new XTable(model);
         JScrollPane scrollPane = new JScrollPane(table);
         table.setFillsViewportHeight(true);
 
         // DATOS INICIALES
-        if(clientController != null) {
-            String[] clientRows = clientController.toCsv().split("\n");
-            if(clientController.getSize() > 0) for (String clientRow : clientRows) model.addRow(clientRow.split(","));
-        }
+        updateTable();
 
         // UPLOAD PANEL
-        XActionPanel uploadPanel = new XActionPanel("Carga masiva de datos CSV", "Aquí puedes cargar mas datos al dashboard", "Subir CSV");
+        XActionPanel uploadPanel = new XActionPanel("Carga masiva de datos CSV", "Aquí puedes cargar mas datos al dashboard.", "Subir CSV");
         JPanel dashboard = new JPanel(null);
 
         // EVENTOS
@@ -82,22 +111,16 @@ public class ManageClients extends XFrame {
                     // VERIFICAR
                     if (clientController != null) {
                         // VERIFICAR NIT
-                        boolean verifyNIT = true;
-                        for (int clientsIndex = 0; clientsIndex < clientController.getSize(); clientsIndex++){
-                            if(clientController.get(clientsIndex).nit == data.nit) {
-                                verifyNIT = false;
-                                break;
-                            }
-                        }
+                        boolean vNit = verifyNIT(data.nit, -1);
 
-                        if(verifyNIT && clientController.getSize() <= 100) {
+                        if(vNit && clientController.getSize() <= 100) {
                             // AGREGAR LOCAL
                             clientController.addData(data);
 
                             // AGREGAR A TABLA
                             model.addRow(dataLine);
-                        } else if(clientController.getSize() > 100) JOptionPane.showMessageDialog(null, "El numero maximo de clientes es de 100", "Error al agregar", JOptionPane.ERROR_MESSAGE);
-                        else if(!verifyNIT) JOptionPane.showMessageDialog(null, "Ya existe un cliente con el mismo NIT", "Error al agregar", JOptionPane.ERROR_MESSAGE);
+                        } else if(clientController.getSize() > 100) XAlert.showError("Error al agregar", "El numero maximo de clientes es de 100");
+                        else if(!vNit) XAlert.showError("Error al agregar", "Ya existe un cliente con el mismo NIT");
 
                     }
                 }
@@ -121,6 +144,131 @@ public class ManageClients extends XFrame {
         tabs.addTab(tabsName[0], dashboard);
     }
 
+    public void clientForm(boolean update) {
+        // PEDIR NIT PRIMERO
+        int tmpNit;
+        Client initialClient = null;
+
+        // BUSCAR CLIENTE
+        if(update) {
+            if(clientController.getSize() == 0) {
+                XAlert.showError("Sin clientes", "Aun no existen clientes registrados");
+                return;
+            }
+
+            // NIT
+            tmpNit = Integer.parseInt(XAlert.showPrompt("Ingresar nit"));
+            if(tmpNit != -1 ){
+                int size = clientController.getSize();
+                for(int index =0; index < size;index++){
+                    if(clientController.get(index).nit == tmpNit) {
+                        initialClient = clientController.get(index);
+                        break;
+                    }
+                }
+
+                if(initialClient == null) {
+                    XAlert.showError("Sin datos", "No se encontró ningún cliente");
+                    return;
+                }
+            } else {
+                XAlert.showError("Nit invalido", "El nit ingresado no es valido");
+                return;
+            }
+        }
+
+        // CREAR FRAME
+        XFrame creationForm = new XFrame();
+        creationForm.setFrame(update?"Modificar":"Crear"+" Cliente", 380, 525);
+        creationForm.setHeader("Agrega datos a un cliente", update?"Actualiza un cliente existente en el dashboard":"El NIT del cliente debe ser nuevo en los datos.");
+
+        // FILECHOOSER
+        JFileChooser chooser = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Avatar de cliente", "jpeg", "jpg", "gif", "png", "bmp" );
+        chooser.setFileFilter(filter);
+
+        // COMPONENTES
+        final String[] avatarURL = {""};
+        if (initialClient != null)
+            avatarURL[0] = initialClient.image;
+
+        XField name = new XField("Nombre: ", 200, initialClient != null?initialClient.name:"");
+        XField age = new XField("Edad: ", 200, initialClient != null?Integer.toString(initialClient.age):"");
+        XField sex = new XField("Sexo: ", 200, initialClient != null?Character.toString(initialClient.sex):"");
+        XField nit = new XField("NIT: ", 200, initialClient != null?Integer.toString(initialClient.nit):"");
+        XLabel imageLabel = new XLabel("Avatar: ");
+        XButton imageBtn = new XButton("Seleccionar imagen", new Color(150, 150, 150), Color.white);
+        XButton cancelBtn = new XButton("Cancelar", new Color(0,0,0,0), new Color(80,80,80));
+        XButton confirmBtn = new XButton(update?"Modificar":"Crear");
+        BufferedImage image = null;
+        try {
+            image = ImageIO.read(new File(initialClient != null?initialClient.image:"./src/images/profile.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        JLabel picLabel = null;
+        if (image != null)
+            picLabel = new JLabel(new ImageIcon(image));
+
+        // POSICIONES
+        name.setBounds(0,10,200,90);
+        age.setBounds(0,100,200,90);
+        sex.setBounds(180,10,200,90);
+        nit.setBounds(180, 100, 200, 90);
+        imageLabel.setBounds(25, 210, 150, 30);
+        imageBtn.setBounds(25, 250, 150, 50);
+        cancelBtn.setBounds(155, 340, 100, 50);
+        confirmBtn.setBounds(255, 340, 100, 50);
+        if (picLabel != null)
+            picLabel.setBounds(230, 208, 115, 115);
+
+        // EVENTOS
+        JLabel finalPicLabel = picLabel;
+        imageBtn.onClick((e) ->{
+            // ARCHIVO
+            chooser.showOpenDialog(null);
+            File dataFile = chooser.getSelectedFile();
+            avatarURL[0] = dataFile.getAbsolutePath();
+            try {
+                finalPicLabel.setIcon(new ImageIcon(ImageIO.read(new File(avatarURL[0]))));
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        });
+
+        cancelBtn.onClick((e) -> creationForm.dispose());
+        Client finalInitialClient = initialClient;
+        confirmBtn.onClick((e) -> {
+            // VERIFICAR
+            boolean verifyLength = (name.getData().length() * age.getData().length() * sex.getData().length() * nit.getData().length() * avatarURL[0].length() ) > 0;
+            boolean vNit = nit.getData().length() > 0 && verifyNIT(Integer.parseInt(nit.getData()), update?Integer.parseInt(nit.getData()):-1);
+
+            // VERIFICAR
+            if(verifyLength && vNit){
+                // AGREGAR CLIENTE
+                Client data = new Client(name.getData(), Integer.parseInt(age.getData()), sex.getData().charAt(0), Integer.parseInt(nit.getData()), avatarURL[0]);
+                if(!update) clientController.addData(data);
+                else clientController.replaceData(finalInitialClient, data);
+
+                // CERRAR Y ACTUALIZAR
+                updateTable();
+                creationForm.dispose();
+            } else if(!verifyLength) XAlert.showError("Error al " + (update?"modificar":"crear"), "Todos los campos son requeridos.");
+            else XAlert.showError("Error al " + (update?"modificar":"crear"), "El nit ya esta registrado.");
+        });
+
+        // AGREGAR
+        creationForm.addComponent(name);
+        creationForm.addComponent(age);
+        creationForm.addComponent(sex);
+        creationForm.addComponent(nit);
+        creationForm.addComponent(imageLabel);
+        creationForm.addComponent(imageBtn);
+        creationForm.addComponent(cancelBtn);
+        creationForm.addComponent(confirmBtn);
+        creationForm.addComponent(picLabel);
+    }
+
     public void crud(XTabPane tabs){
         // COMPONENTES
         JPanel optionsPanel = new JPanel(null);
@@ -129,6 +277,10 @@ public class ManageClients extends XFrame {
         XActionPanel updateClient = new XActionPanel("Modificar clientes", "Edita los datos de un cliente por NIT.", "Modificar cliente");
         XActionPanel deleteClient = new XActionPanel("Remover clientes", "Elimina todo el registro de un cliente.", "Eliminar cliente");
         XActionPanel resetClients = new XActionPanel("Reiniciar dashboard", "Borra todos los datos existentes en el dashboard.", "Borrar todo", new Color(70, 70, 70),new Color(244,67,54));
+
+        // EVENTOS
+        createClient.setAction((e) -> clientForm(false));
+        updateClient.setAction((e) -> clientForm(true));
 
         // PROPIEDADES
         createClient.setBounds(0, 0, getWidth() - 150, 75);
