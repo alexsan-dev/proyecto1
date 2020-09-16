@@ -2,12 +2,19 @@ package com.alex.views;
 
 import com.alex.components.XButton;
 import com.alex.components.XFrame;
+import com.alex.controllers.ClientController;
 import com.alex.controllers.UserModelController;
 
 import java.awt.*;
 
 public class MainMenu extends XFrame {
+    // DATOS
+    private ClientController clientController;
+
     public MainMenu(UserModelController userController){
+        // CREAR CONTROLADOR
+        clientController = new ClientController();
+
         // CONFIGURAR VENTANA
         setFrame("Menu principal", 385, 315);
         setHeader("Bienvenido de nuevo " + userController.name, "Aqui hay algunas herramientas que puedes usar");
@@ -22,10 +29,7 @@ public class MainMenu extends XFrame {
         XButton reportsBtn = new XButton("Reportes");
 
         // EVENTOS
-        manageClientsBtn.onClick((e) -> {
-            new ManageClients();
-            dispose();
-        });
+        manageClientsBtn.onClick((e) -> new ManageClients(clientController));
 
         // POSICION
         manageClientsBtn.setBounds(25,25, 160, 70);

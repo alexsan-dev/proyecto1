@@ -1,17 +1,12 @@
 package com.alex;
 
-import javax.swing.*;
-
-import com.alex.controllers.UserModelController;
+import com.alex.controllers.ClientController;
 import com.alex.views.Auth;
-import com.alex.views.MainMenu;
 import com.alex.views.ManageClients;
 
-class Main {
+import javax.swing.*;
 
-    /**
-     * @param args
-     */
+class Main {
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
@@ -21,6 +16,6 @@ class Main {
         }
 
         // INICIAR AUTH
-       new ManageClients();
+        new Auth();
     }
 }

@@ -13,8 +13,8 @@ public class XTabPane extends JTabbedPane {
 
     public void setTabs(){
         for(int labelIndex = 0;labelIndex < labels.length; labelIndex++){
-            JLabel lab = new JLabel(labels[labelIndex]);
-            lab.setPreferredSize(new Dimension(200, 30));
+            XLabel lab = new XLabel(labels[labelIndex]);
+            lab.setPreferredSize(new Dimension(100, 40));
             setTabComponentAt(labelIndex, lab);
         }
     }
