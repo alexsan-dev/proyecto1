@@ -19,7 +19,7 @@ public class XField extends JPanel {
         setComponents();
     }
 
-    public XField(String text, int width, String initialValue){
+    public XField(String text, int width, String initialValue, boolean editable){
         setLayout(null);
         setSize(width,90);
 
@@ -29,6 +29,7 @@ public class XField extends JPanel {
 
         // PROPIEDADES
         field.setText(initialValue);
+        field.setEditable(editable);
 
         // AGREGAR
         setComponents();

@@ -45,7 +45,7 @@ public class ManageClients extends XFrame {
         addComponent(tabs);
     }
 
-    public boolean verifyNIT(int nit, int exclude){
+    private boolean verifyNIT(int nit, int exclude){
         // VERIFICAR NIT
         boolean verifyNIT = true;
         for (int clientsIndex = 0; clientsIndex < clientController.getSize(); clientsIndex++){
@@ -73,7 +73,21 @@ public class ManageClients extends XFrame {
         }
     }
 
-    public void dashboard(XTabPane tabs){
+    private Client findByNIT(int nit){
+        Client tmpClient = null;
+
+        // BUSCAR
+        for(int index =0; index < clientController.getSize();index++){
+            if(clientController.get(index).nit == nit) {
+                tmpClient = clientController.get(index);
+                break;
+            }
+        }
+
+        return tmpClient;
+    }
+
+    private void dashboard(XTabPane tabs){
         // DATOS
         String[] columns = { "Nombre", "Edad", "Sexo", "NIT" };
 
@@ -83,7 +97,11 @@ public class ManageClients extends XFrame {
         chooser.setFileFilter(filter);
 
         // TABLA
-        model = new DefaultTableModel(columns, 0);
+        model = new DefaultTableModel(columns, 0) {
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         XTable table = new XTable(model);
         JScrollPane scrollPane = new JScrollPane(table);
         table.setFillsViewportHeight(true);
@@ -144,7 +162,7 @@ public class ManageClients extends XFrame {
         tabs.addTab(tabsName[0], dashboard);
     }
 
-    public void clientForm(boolean update) {
+    private void clientForm(boolean update, boolean editable) {
         // PEDIR NIT PRIMERO
         int tmpNit;
         Client initialClient = null;
@@ -159,13 +177,7 @@ public class ManageClients extends XFrame {
             // NIT
             tmpNit = Integer.parseInt(XAlert.showPrompt("Ingresar nit"));
             if(tmpNit != -1 ){
-                int size = clientController.getSize();
-                for(int index =0; index < size;index++){
-                    if(clientController.get(index).nit == tmpNit) {
-                        initialClient = clientController.get(index);
-                        break;
-                    }
-                }
+                initialClient = findByNIT(tmpNit);
 
                 if(initialClient == null) {
                     XAlert.showError("Sin datos", "No se encontró ningún cliente");
@@ -179,8 +191,8 @@ public class ManageClients extends XFrame {
 
         // CREAR FRAME
         XFrame creationForm = new XFrame();
-        creationForm.setFrame(update?"Modificar":"Crear"+" Cliente", 380, 525);
-        creationForm.setHeader("Agrega datos a un cliente", update?"Actualiza un cliente existente en el dashboard":"El NIT del cliente debe ser nuevo en los datos.");
+        creationForm.setFrame((!editable?"Ver":update?"Modificar":"Crear")+" Cliente", 380, 525);
+        creationForm.setHeader(!editable?"Obtener datos de un cliente":"Agrega datos a un cliente", !editable?"Ver datos completos de cliente":update?"Actualiza un cliente existente en el dashboard":"El NIT del cliente debe ser nuevo en los datos.");
 
         // FILECHOOSER
         JFileChooser chooser = new JFileChooser();
@@ -192,14 +204,14 @@ public class ManageClients extends XFrame {
         if (initialClient != null)
             avatarURL[0] = initialClient.image;
 
-        XField name = new XField("Nombre: ", 200, initialClient != null?initialClient.name:"");
-        XField age = new XField("Edad: ", 200, initialClient != null?Integer.toString(initialClient.age):"");
-        XField sex = new XField("Sexo: ", 200, initialClient != null?Character.toString(initialClient.sex):"");
-        XField nit = new XField("NIT: ", 200, initialClient != null?Integer.toString(initialClient.nit):"");
+        XField name = new XField("Nombre: ", 200, initialClient != null?initialClient.name:"", editable);
+        XField age = new XField("Edad: ", 200, initialClient != null?Integer.toString(initialClient.age):"", editable);
+        XField sex = new XField("Sexo: ", 200, initialClient != null?Character.toString(initialClient.sex):"", editable);
+        XField nit = new XField("NIT: ", 200, initialClient != null?Integer.toString(initialClient.nit):"", editable);
         XLabel imageLabel = new XLabel("Avatar: ");
         XButton imageBtn = new XButton("Seleccionar imagen", new Color(150, 150, 150), Color.white);
         XButton cancelBtn = new XButton("Cancelar", new Color(0,0,0,0), new Color(80,80,80));
-        XButton confirmBtn = new XButton(update?"Modificar":"Crear");
+        XButton confirmBtn = new XButton(!editable?"Aceptar":update?"Modificar":"Crear");
         BufferedImage image = null;
         try {
             image = ImageIO.read(new File(initialClient != null?initialClient.image:"./src/images/profile.png"));
@@ -222,6 +234,9 @@ public class ManageClients extends XFrame {
         if (picLabel != null)
             picLabel.setBounds(230, 208, 115, 115);
 
+        // PROPIEDADES
+        imageBtn.setEnabled(editable);
+
         // EVENTOS
         JLabel finalPicLabel = picLabel;
         imageBtn.onClick((e) ->{
@@ -236,26 +251,32 @@ public class ManageClients extends XFrame {
             }
         });
 
+        // CANCEL
         cancelBtn.onClick((e) -> creationForm.dispose());
+
+        // CONFIRMAR
         Client finalInitialClient = initialClient;
         confirmBtn.onClick((e) -> {
-            // VERIFICAR
-            boolean verifyLength = (name.getData().length() * age.getData().length() * sex.getData().length() * nit.getData().length() * avatarURL[0].length() ) > 0;
-            boolean vNit = nit.getData().length() > 0 && verifyNIT(Integer.parseInt(nit.getData()), update?Integer.parseInt(nit.getData()):-1);
+            if(editable) {
+                // VERIFICAR
+                boolean verifyLength = (name.getData().length() * age.getData().length() * sex.getData().length() * nit.getData().length() * avatarURL[0].length()) > 0;
+                boolean vNit = nit.getData().length() > 0 && verifyNIT(Integer.parseInt(nit.getData()), update ? Integer.parseInt(nit.getData()) : -1);
 
-            // VERIFICAR
-            if(verifyLength && vNit){
-                // AGREGAR CLIENTE
-                Client data = new Client(name.getData(), Integer.parseInt(age.getData()), sex.getData().charAt(0), Integer.parseInt(nit.getData()), avatarURL[0]);
-                if(!update) clientController.addData(data);
-                else clientController.replaceData(finalInitialClient, data);
+                // VERIFICAR
+                if (verifyLength && vNit) {
+                    // AGREGAR CLIENTE
+                    Client data = new Client(name.getData(), Integer.parseInt(age.getData()), sex.getData().charAt(0), Integer.parseInt(nit.getData()), avatarURL[0]);
+                    if (!update) clientController.addData(data);
+                    else clientController.replaceData(finalInitialClient, data);
 
-                // CERRAR Y ACTUALIZAR
-                updateTable();
-                creationForm.dispose();
-            } else if(!verifyLength) XAlert.showError("Error al " + (update?"modificar":"crear"), "Todos los campos son requeridos.");
-            else XAlert.showError("Error al " + (update?"modificar":"crear"), "El nit ya esta registrado.");
-        });
+                    // CERRAR Y ACTUALIZAR
+                    updateTable();
+                    creationForm.dispose();
+                } else if (!verifyLength)
+                    XAlert.showError("Error al " + (update ? "modificar" : "crear"), "Todos los campos son requeridos.");
+                else XAlert.showError("Error al " + (update ? "modificar" : "crear"), "El nit ya esta registrado.");
+            } else creationForm.dispose();
+            });
 
         // AGREGAR
         creationForm.addComponent(name);
@@ -269,7 +290,7 @@ public class ManageClients extends XFrame {
         creationForm.addComponent(picLabel);
     }
 
-    public void crud(XTabPane tabs){
+    private void crud(XTabPane tabs){
         // COMPONENTES
         JPanel optionsPanel = new JPanel(null);
         XActionPanel createClient = new XActionPanel("Clientes nuevos", "Crea un cliente desde un formulario.", "Crear cliente");
@@ -279,8 +300,35 @@ public class ManageClients extends XFrame {
         XActionPanel resetClients = new XActionPanel("Reiniciar dashboard", "Borra todos los datos existentes en el dashboard.", "Borrar todo", new Color(70, 70, 70),new Color(244,67,54));
 
         // EVENTOS
-        createClient.setAction((e) -> clientForm(false));
-        updateClient.setAction((e) -> clientForm(true));
+        createClient.setAction((e) -> clientForm(false, true));
+        updateClient.setAction((e) -> clientForm(true, true));
+        readClient.setAction((e) -> clientForm(true, false));
+        deleteClient.setAction((e) ->{
+            if(clientController.getSize() == 0) XAlert.showError("Sin clientes", "Aun no existen clientes registrados");
+            else {
+                // BUSCAR CLIENTE
+                int tmpNit = Integer.parseInt(XAlert.showPrompt("Ingresar nit"));
+                Client tmpClient = findByNIT(tmpNit);
+
+                // BORRAR
+                if (tmpClient != null) {
+                    clientController.deleteData(tmpClient);
+                    updateTable();
+                    XAlert.showAlert("Cliente borrado", "Se elimino un cliente correctamente");
+                } else XAlert.showError("Sin datos", "No se encontró ningún cliente");
+            }
+        });
+        resetClients.setAction((e) ->{
+            if(clientController.getSize() == 0) XAlert.showError("Sin clientes", "Aun no existen clientes registrados");
+            else {
+                int erase = XAlert.showConfirm("Esta seguro de querer borrar todo?");
+                if(erase == 0) {
+                    clientController.clear();
+                    updateTable();
+                    XAlert.showAlert("Borrado completo", "Se eliminaron todos los datos de clientes");
+                }
+            }
+        });
 
         // PROPIEDADES
         createClient.setBounds(0, 0, getWidth() - 150, 75);

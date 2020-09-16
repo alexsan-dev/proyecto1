@@ -16,9 +16,13 @@ public class ClientController {
 
     public void replaceData(Client data, Client newData) { dataList.replace(data, newData); }
 
+    public void deleteData(Client data) { dataList.delete(data); }
+
     public int getSize(){
         return dataList.getSize();
     }
+
+    public void clear() { dataList = new LinkedList<>(); }
 
     public Client get(int index){
         return dataList.get(index);
