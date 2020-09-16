@@ -5,4 +5,5 @@ public interface ClientsModel {
     int age = 0;
     char sex = 0;
     int nit = 0;
+    String image = "";
 }

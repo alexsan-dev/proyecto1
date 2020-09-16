@@ -1,8 +1,7 @@
 package com.alex.controllers;
 
-import com.alex.structures.Client;
+import com.alex.data.Client;
 import com.alex.structures.LinkedList;
-
 
 public class ClientController {
     public LinkedList<Client> dataList;

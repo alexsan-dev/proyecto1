@@ -1,14 +1,10 @@
 package com.alex.views;
 
-import com.alex.components.XButton;
-import com.alex.components.XFrame;
-import com.alex.components.XTabPane;
-import com.alex.components.XTable;
+import com.alex.components.*;
 import com.alex.controllers.ClientController;
-import com.alex.structures.Client;
+import com.alex.data.Client;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -17,7 +13,7 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class ManageClients extends XFrame {
-    private final String[] tabsName = { "Datos" };
+    private final String[] tabsName = { "Clientes", "Editar" };
     private final ClientController clientController;
 
     public ManageClients(ClientController clientController){
@@ -33,8 +29,9 @@ public class ManageClients extends XFrame {
     public void renderWithin() {
         XTabPane tabs = new XTabPane(tabsName);
 
-        // DASHBOARD
+        // PANELS
         dashboard(tabs);
+        crud(tabs);
 
         // POSICIONES
         tabs.setBounds(25,0,getWidth() - 25, getHeight() - 80);
@@ -42,15 +39,6 @@ public class ManageClients extends XFrame {
 
         // AGREGAR
         addComponent(tabs);
-    }
-
-    public JLabel getLabel(String text, int size){
-        JLabel label = new JLabel(text);
-        label.setOpaque(true);
-        label.setForeground(Color.white);
-        label.setBackground(new Color(100, 100, 100));
-        label.setFont(new Font("Lato", Font.BOLD, size));
-        return label;
     }
 
     public void dashboard(XTabPane tabs){
@@ -71,21 +59,15 @@ public class ManageClients extends XFrame {
         // DATOS INICIALES
         if(clientController != null) {
             String[] clientRows = clientController.toCsv().split("\n");
-            for (String clientRow : clientRows) model.addRow(clientRow.split(","));
+            if(clientController.getSize() > 0) for (String clientRow : clientRows) model.addRow(clientRow.split(","));
         }
 
         // UPLOAD PANEL
-        JPanel uploadPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JPanel uploadTextPanel = new JPanel(new GridLayout(2, 1));
-
-        JLabel uploadLabel = getLabel("Carga masiva de datos CSV", 17);
-        JLabel uploadSubLabel = getLabel("Aquí puedes cargar mas datos al dashboard", 16);
-        XButton uploadBtn = new XButton("Subir CSV");
-
+        XActionPanel uploadPanel = new XActionPanel("Carga masiva de datos CSV", "Aquí puedes cargar mas datos al dashboard", "Subir CSV");
         JPanel dashboard = new JPanel(null);
 
         // EVENTOS
-        uploadBtn.onClick((e) ->{
+         uploadPanel.setAction((e) ->{
             // ARCHIVO
             chooser.showOpenDialog(null);
             File dataFile = chooser.getSelectedFile();
@@ -95,37 +77,41 @@ public class ManageClients extends XFrame {
                 while(fileReader.hasNextLine()){
                     // CREAR OBJETO
                     String[] dataLine = fileReader.nextLine().split(",");
-                    Client data = new Client(dataLine[0], Integer.parseInt(dataLine[1]), dataLine[2].charAt(0), Integer.parseInt(dataLine[3]));
+                    Client data = new Client(dataLine[0], Integer.parseInt(dataLine[1]), dataLine[2].charAt(0), Integer.parseInt(dataLine[3]), dataLine[4]);
 
-                    // AGREGAR LOCAL
-                    if (clientController != null)
-                        clientController.addData(data);
+                    // VERIFICAR
+                    if (clientController != null) {
+                        // VERIFICAR NIT
+                        boolean verifyNIT = true;
+                        for (int clientsIndex = 0; clientsIndex < clientController.getSize(); clientsIndex++){
+                            if(clientController.get(clientsIndex).nit == data.nit) {
+                                verifyNIT = false;
+                                break;
+                            }
+                        }
 
-                    // AGREGAR A TABLA
-                    model.addRow(dataLine);
+                        if(verifyNIT && clientController.getSize() <= 100) {
+                            // AGREGAR LOCAL
+                            clientController.addData(data);
+
+                            // AGREGAR A TABLA
+                            model.addRow(dataLine);
+                        } else if(clientController.getSize() > 100) JOptionPane.showMessageDialog(null, "El numero maximo de clientes es de 100", "Error al agregar", JOptionPane.ERROR_MESSAGE);
+                        else if(!verifyNIT) JOptionPane.showMessageDialog(null, "Ya existe un cliente con el mismo NIT", "Error al agregar", JOptionPane.ERROR_MESSAGE);
+
+                    }
                 }
             } catch (FileNotFoundException fileNotFoundException) {
                 fileNotFoundException.printStackTrace();
             }
         });
 
-        // POSICIONES
+        // PROPIEDADES
         scrollPane.setOpaque(true);
         scrollPane.setBackground(new Color(220, 220, 220));
-        uploadTextPanel.setBackground(new Color(100, 100, 100));
-        uploadTextPanel.setBorder(new EmptyBorder(0,0,0,20));
-        uploadPanel.setBorder(new EmptyBorder(10,25,10,25));
-        uploadPanel.setBackground(new Color(100, 100, 100));
         uploadPanel.setBounds(0,getHeight() - 184, getWidth() - 150, 75);
 
         scrollPane.setBounds(0,0, getWidth() - 150, getHeight() - 180);
-
-        // PANEL DE UPLOAD
-        uploadTextPanel.add(uploadLabel);
-        uploadTextPanel.add(uploadSubLabel);
-
-        uploadPanel.add(uploadTextPanel);
-        uploadPanel.add(uploadBtn);
 
         // DASHBOARD
         dashboard.add(scrollPane);
@@ -133,5 +119,35 @@ public class ManageClients extends XFrame {
 
         // AGREGAR A TAB
         tabs.addTab(tabsName[0], dashboard);
+    }
+
+    public void crud(XTabPane tabs){
+        // COMPONENTES
+        JPanel optionsPanel = new JPanel(null);
+        XActionPanel createClient = new XActionPanel("Clientes nuevos", "Crea un cliente desde un formulario.", "Crear cliente");
+        XActionPanel readClient = new XActionPanel("Obtener información", "Busca un cliente por su numero de NIT.", "Ver cliente");
+        XActionPanel updateClient = new XActionPanel("Modificar clientes", "Edita los datos de un cliente por NIT.", "Modificar cliente");
+        XActionPanel deleteClient = new XActionPanel("Remover clientes", "Elimina todo el registro de un cliente.", "Eliminar cliente");
+        XActionPanel resetClients = new XActionPanel("Reiniciar dashboard", "Borra todos los datos existentes en el dashboard.", "Borrar todo", new Color(70, 70, 70),new Color(244,67,54));
+
+        // PROPIEDADES
+        createClient.setBounds(0, 0, getWidth() - 150, 75);
+        readClient.setBounds(0, 75, getWidth() - 150, 75);
+        updateClient.setBounds(0, 150, getWidth() - 150, 75);
+        deleteClient.setBounds(0, 225, getWidth() - 150, 75);
+        resetClients.setBounds(0, 316, getWidth() - 150, 75);
+
+        // AGREGAR A PANEL
+        optionsPanel.add(createClient);
+        optionsPanel.add(readClient);
+        optionsPanel.add(updateClient);
+        optionsPanel.add(deleteClient);
+        optionsPanel.add(resetClients);
+
+        // PROPIEDADES
+        optionsPanel.setBackground(new Color(220, 220, 220));
+
+        // AGREGAR A TAB
+        tabs.addTab(tabsName[1], optionsPanel);
     }
 }

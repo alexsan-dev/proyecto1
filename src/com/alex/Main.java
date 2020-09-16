@@ -16,6 +16,6 @@ class Main {
         }
 
         // INICIAR AUTH
-        new Auth();
+        new ManageClients(new ClientController());
     }
 }
