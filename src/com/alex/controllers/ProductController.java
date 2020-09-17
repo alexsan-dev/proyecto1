@@ -1,22 +1,22 @@
 package com.alex.controllers;
 
-import com.alex.data.Client;
+import com.alex.data.Product;
 import com.alex.structures.LinkedList;
 
-public class ClientController {
-    public LinkedList<Client> dataList;
+public class ProductController {
+    public LinkedList<Product> dataList;
 
-    public ClientController(){
+    public ProductController(){
         dataList = new LinkedList<>();
     }
 
-    public void addData(Client data) {
+    public void addData(Product data) {
         dataList.add(data);
     }
 
-    public void replaceData(Client data, Client newData) { dataList.replace(data, newData); }
+    public void replaceData(Product data, Product newData) { dataList.replace(data, newData); }
 
-    public void deleteData(Client data) { dataList.delete(data); }
+    public void deleteData(Product data) { dataList.delete(data); }
 
     public int getSize(){
         return dataList.getSize();
@@ -24,7 +24,7 @@ public class ClientController {
 
     public void clear() { dataList = new LinkedList<>(); }
 
-    public Client get(int index){
+    public Product get(int index){
         return dataList.get(index);
     }
 
@@ -35,7 +35,7 @@ public class ClientController {
 
         // CREAR STRING
         for(int index = 0; index < size; index++)
-            out.append(dataList.get(index).name).append(",").append(dataList.get(index).age).append(",").append(dataList.get(index).sex).append(",").append(dataList.get(index).nit).append(dataList.get(index).image).append("\n");
+            out.append(dataList.get(index).name).append(",").append(dataList.get(index).price).append(",").append(dataList.get(index).size).append(",").append(dataList.get(index).image).append("\n");
 
         return out.toString();
     }
@@ -48,10 +48,9 @@ public class ClientController {
 
         // CREAR STRING
         for(int index = 0; index < size;index++)
-            out.append("Nombre: ").append(dataList.get(index).name).append(" Edad: ").append(dataList.get(index).age).append(" Sexo: ").append(dataList.get(index).sex).append(" NIT: ").append(dataList.get(index).nit).append("\n");
+            out.append("Nombre: ").append(dataList.get(index).name).append(" Precio: ").append(dataList.get(index).price).append(" Cantidad: ").append(dataList.get(index).size).append(" Imagen: ").append(dataList.get(index).image).append("\n");
 
         // SALIDA
         return out.toString();
     }
-
 }

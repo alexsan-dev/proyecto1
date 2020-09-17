@@ -23,7 +23,10 @@ public class XBarChart {
         chartPanel = new ChartPanel(jBarChart);
     }
 
-    public void setValue(int age, int count){
-        dts.addValue(count, Integer.toString(age), Integer.toString(age));
+    public void setValue(int label, int count){
+        dts.addValue(count, Integer.toString(label), Integer.toString(label));
+    }
+    public void setValue(float label, int count){
+        dts.addValue(count, Float.toString(label), Float.toString(label));
     }
 }

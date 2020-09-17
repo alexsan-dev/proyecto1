@@ -1,8 +1,6 @@
 package com.alex;
 
-import com.alex.controllers.ClientController;
 import com.alex.views.Auth;
-import com.alex.views.ManageClients;
 
 import javax.swing.*;
 
@@ -16,6 +14,6 @@ class Main {
         }
 
         // INICIAR AUTH
-        new ManageClients(new ClientController());
+        new Auth();
     }
 }
