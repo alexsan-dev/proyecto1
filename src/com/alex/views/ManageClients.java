@@ -3,6 +3,7 @@ package com.alex.views;
 import com.alex.components.*;
 import com.alex.controllers.ClientController;
 import com.alex.data.Client;
+import com.alex.structures.LinkedList;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -16,9 +17,11 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class ManageClients extends XFrame {
-    private final String[] tabsName = { "Clientes", "Editar" };
+    private final String[] tabsName = { "Clientes", "Graficas", "Editar" };
     private final ClientController clientController;
     private DefaultTableModel model;
+    private XPieChart pieChart;
+    private XBarChart barChart;
 
     public ManageClients(ClientController clientController){
         // DATOS
@@ -35,6 +38,7 @@ public class ManageClients extends XFrame {
 
         // PANELS
         dashboard(tabs);
+        charts(tabs);
         crud(tabs);
 
         // POSICIONES
@@ -87,6 +91,68 @@ public class ManageClients extends XFrame {
         return tmpClient;
     }
 
+    public void updateChart(){
+        // CONTAR GENERO
+        int count1 = 0, count2 = 0;
+        for(int index = 0; index < clientController.getSize(); index++){
+            if(clientController.get(index).sex == 'M') count1++;
+            else if(clientController.get(index).sex == 'F') count2++;
+        }
+
+        // CONTAR EDADES
+        LinkedList<String> ages = new LinkedList<>();
+        for(int index = 0; index < clientController.getSize(); index++){
+            // EDAD
+            int currentAge = clientController.get(index).age;
+            int count = 0;
+
+            // CONTAR
+            for(int subIndex = 0; subIndex < clientController.getSize(); subIndex++) {
+                if (clientController.get(subIndex).age == currentAge) count++;
+            }
+
+            // AGREGAR
+            ages.add(currentAge + "," + count);
+        }
+
+        // DATASET
+        if(pieChart != null && barChart != null) {
+            barChart.dts.clear();
+            pieChart.setValue("Hombres", count1);
+            pieChart.setValue("Mujeres", count2);
+
+            for(int dataIndex =0; dataIndex < ages.getSize(); dataIndex++){
+                String[] vals = ages.get(dataIndex).split(",");
+                barChart.setValue(Integer.parseInt(vals[0]), Integer.parseInt(vals[1]));
+            }
+        }
+    }
+
+    private void charts(XTabPane tabs){
+        // LAYOUT
+        JPanel chartPanel = new JPanel(null);
+        JScrollPane scrollPane = new JScrollPane(chartPanel);
+        
+        // COMPONENTES
+        pieChart = new XPieChart("Sexo de clientes");
+        barChart = new XBarChart("Rango de edades", "Edad", "Cantidad");
+        updateChart();
+
+        // POSICIONES
+        pieChart.chartPanel.setBounds(0,0,getWidth() - 170,getHeight() - 115 );
+        barChart.chartPanel.setBounds(0,getHeight() - 115,getWidth() - 170,getHeight() - 115);
+        chartPanel.setBounds(0,0, getWidth() - 170, (2 * getHeight()) - 200);
+        chartPanel.setPreferredSize(new Dimension(getWidth() - 170, (2 * getHeight()) - 200));
+        scrollPane.setBounds(0,0, getWidth() - 155, getHeight() - 80);
+
+        // AGREGAR
+        chartPanel.add(pieChart.chartPanel);
+        chartPanel.add(barChart.chartPanel);
+
+        // AGREGAR A TAB
+        tabs.addTab(tabsName[1], scrollPane);
+    }
+
     private void dashboard(XTabPane tabs){
         // DATOS
         String[] columns = { "Nombre", "Edad", "Sexo", "NIT" };
@@ -108,6 +174,7 @@ public class ManageClients extends XFrame {
 
         // DATOS INICIALES
         updateTable();
+        updateChart();
 
         // UPLOAD PANEL
         XActionPanel uploadPanel = new XActionPanel("Carga masiva de datos CSV", "Aquí puedes cargar mas datos al dashboard.", "Subir CSV");
@@ -136,7 +203,8 @@ public class ManageClients extends XFrame {
                             clientController.addData(data);
 
                             // AGREGAR A TABLA
-                            model.addRow(dataLine);
+                            updateTable();
+                            updateChart();
                         } else if(clientController.getSize() > 100) XAlert.showError("Error al agregar", "El numero maximo de clientes es de 100");
                         else if(!vNit) XAlert.showError("Error al agregar", "Ya existe un cliente con el mismo NIT");
 
@@ -159,12 +227,12 @@ public class ManageClients extends XFrame {
         dashboard.add(uploadPanel);
 
         // AGREGAR A TAB
-        tabs.addTab(tabsName[0], dashboard);
+        tabs.addTab(tabsName[2], dashboard);
     }
 
     private void clientForm(boolean update, boolean editable) {
         // PEDIR NIT PRIMERO
-        int tmpNit;
+        int tmpNit = 0;
         Client initialClient = null;
 
         // BUSCAR CLIENTE
@@ -256,11 +324,12 @@ public class ManageClients extends XFrame {
 
         // CONFIRMAR
         Client finalInitialClient = initialClient;
+        int finalTmpNit = tmpNit;
         confirmBtn.onClick((e) -> {
             if(editable) {
                 // VERIFICAR
                 boolean verifyLength = (name.getData().length() * age.getData().length() * sex.getData().length() * nit.getData().length() * avatarURL[0].length()) > 0;
-                boolean vNit = nit.getData().length() > 0 && verifyNIT(Integer.parseInt(nit.getData()), update ? Integer.parseInt(nit.getData()) : -1);
+                boolean vNit = nit.getData().length() > 0 && verifyNIT(Integer.parseInt(nit.getData()), update ? finalTmpNit : -1);
 
                 // VERIFICAR
                 if (verifyLength && vNit) {
@@ -271,6 +340,7 @@ public class ManageClients extends XFrame {
 
                     // CERRAR Y ACTUALIZAR
                     updateTable();
+                    updateChart();
                     creationForm.dispose();
                 } else if (!verifyLength)
                     XAlert.showError("Error al " + (update ? "modificar" : "crear"), "Todos los campos son requeridos.");
@@ -314,6 +384,7 @@ public class ManageClients extends XFrame {
                 if (tmpClient != null) {
                     clientController.deleteData(tmpClient);
                     updateTable();
+                    updateChart();
                     XAlert.showAlert("Cliente borrado", "Se elimino un cliente correctamente");
                 } else XAlert.showError("Sin datos", "No se encontró ningún cliente");
             }
@@ -325,6 +396,7 @@ public class ManageClients extends XFrame {
                 if(erase == 0) {
                     clientController.clear();
                     updateTable();
+                    updateChart();
                     XAlert.showAlert("Borrado completo", "Se eliminaron todos los datos de clientes");
                 }
             }
