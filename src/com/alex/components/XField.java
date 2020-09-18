@@ -1,6 +1,7 @@
 package com.alex.components;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class XField extends JPanel {
     public JTextField field;
@@ -8,6 +9,7 @@ public class XField extends JPanel {
     private boolean isPassword;
 
     public XField(String text, int width){
+        setBackground(new Color(220, 220, 220));
         setLayout(null);
         setSize(width,90);
 
@@ -20,6 +22,7 @@ public class XField extends JPanel {
     }
 
     public XField(String text, int width, String initialValue, boolean editable){
+        setBackground(new Color(220, 220, 220));
         setLayout(null);
         setSize(width,90);
 
@@ -36,6 +39,7 @@ public class XField extends JPanel {
     }
 
     public XField(String text, int width, boolean isPassword){
+        setBackground(new Color(220, 220, 220));
         setLayout(null);
         setSize(width,90);
         this.isPassword = isPassword;

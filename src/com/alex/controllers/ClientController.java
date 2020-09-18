@@ -24,6 +24,17 @@ public class ClientController {
 
     public void clear() { dataList = new LinkedList<>(); }
 
+    public String[] getNits(){
+        // SALIDA
+        String[] out = new String[dataList.getSize()];
+
+        // NITS
+        for(int index = 0; index < out.length; index++)
+            out[index] = Integer.toString(dataList.get(index).nit);
+
+        return out;
+    }
+
     public Client get(int index){
         return dataList.get(index);
     }
@@ -35,7 +46,7 @@ public class ClientController {
 
         // CREAR STRING
         for(int index = 0; index < size; index++)
-            out.append(dataList.get(index).name).append(",").append(dataList.get(index).age).append(",").append(dataList.get(index).sex).append(",").append(dataList.get(index).nit).append(dataList.get(index).image).append("\n");
+            out.append(dataList.get(index).name).append(",").append(dataList.get(index).age).append(",").append(dataList.get(index).sex).append(",").append(dataList.get(index).nit).append(",").append(dataList.get(index).image).append("\n");
 
         return out.toString();
     }

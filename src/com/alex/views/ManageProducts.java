@@ -2,7 +2,9 @@ package com.alex.views;
 
 import com.alex.components.*;
 import com.alex.controllers.ProductController;
+import com.alex.controllers.SalesController;
 import com.alex.data.Product;
+import com.alex.data.Sell;
 import com.alex.structures.LinkedList;
 
 import javax.imageio.ImageIO;
@@ -19,13 +21,15 @@ import java.util.Scanner;
 public class ManageProducts extends XFrame {
     private final String[] tabsName = { "Productos", "Graficas", "Editar" };
     private final ProductController productController;
+    private final SalesController salesController;
     private DefaultTableModel model;
     private XPieChart pieChart;
     private XBarChart barChart;
 
-    public ManageProducts(ProductController productController){
+    public ManageProducts(ProductController productController, SalesController salesController){
         // DATOS
         this.productController = productController;
+        this.salesController = salesController;
 
         // CONFIGURAR VENTANA
         setFrame("Administración de productos", 800, 500);
@@ -52,8 +56,8 @@ public class ManageProducts extends XFrame {
     private boolean verifyName(String name, String exclude){
         // VERIFICAR NIT
         boolean verifyName = true;
-        for (int clientsIndex = 0; clientsIndex < productController.getSize(); clientsIndex++){
-            if(productController.get(clientsIndex).name.equals(name) && (exclude.equals("") || !productController.get(clientsIndex).name.equals(exclude))) {
+        for (int productsIndex = 0; productsIndex < productController.getSize(); productsIndex++){
+            if(productController.get(productsIndex).name.equals(name) && (exclude.equals("") || !productController.get(productsIndex).name.equals(exclude))) {
                 verifyName = false;
                 break;
             }
@@ -72,8 +76,8 @@ public class ManageProducts extends XFrame {
 
         // ACTUALIZAR DATOS
         if(productController != null) {
-            String[] clientRows = productController.toCsv().split("\n");
-            if(productController.getSize() > 0) for (String clientRow : clientRows) model.addRow(clientRow.split(","));
+            String[] productRows = productController.toCsv().split("\n");
+            if(productController.getSize() > 0) for (String productRow : productRows) model.addRow(productRow.split(","));
         }
     }
 
@@ -92,29 +96,61 @@ public class ManageProducts extends XFrame {
     }
 
     public void updateChart(){
-        // CONTAR EDADES
+        // CONTAR PRECIOS
         LinkedList<String> products = new LinkedList<>();
         for(int index = 0; index < productController.getSize(); index++){
-            // EDAD
+            // PRECIO
             float currentPrice = productController.get(index).price;
             int count = 0;
 
             // CONTAR
-            for(int subIndex = 0; subIndex < productController.getSize(); subIndex++) {
+            for(int subIndex = 0; subIndex < productController.getSize(); subIndex++)
                 if (productController.get(subIndex).price == currentPrice) count++;
-            }
 
             // AGREGAR
             products.add(currentPrice + "," + count);
         }
 
+        // CONTAR VENTAS
+        LinkedList<Sell> tmpSales = salesController.dataList.clone();
+        LinkedList<String> sales = new LinkedList<>();
+        for(int index = 0; index < tmpSales.getSize(); index++){
+            if(tmpSales.get(index) != null) {
+                // PRODUCTO
+                Sell currentSell = tmpSales.get(index);
+                String name = currentSell.product;
+                int size = 0;
+
+                // CANTIDAD
+                for (int subIndex = 0; subIndex < tmpSales.getSize(); subIndex++)
+                    if(tmpSales.get(subIndex).product.equals(name))
+                        size += tmpSales.get(subIndex).size;
+
+                for (int subIndex = 0; subIndex < tmpSales.getSize(); subIndex++)
+                    if(tmpSales.get(subIndex).product.equals(name))
+                        tmpSales.delete(tmpSales.get(subIndex));
+
+                // AGREGAR
+                sales.add(size + "," + name);
+            }
+        }
+
         // DATASET
         if(pieChart != null && barChart != null) {
+            // LIMPIAR
             barChart.dts.clear();
+            pieChart.dts.clear();
 
-            for(int dataIndex =0; dataIndex < products.getSize(); dataIndex++){
+            // BARRAS
+            for(int dataIndex = 0; dataIndex < products.getSize(); dataIndex++){
                 String[] vals = products.get(dataIndex).split(",");
                 barChart.setValue(Float.parseFloat(vals[0]), Integer.parseInt(vals[1]));
+            }
+
+            // PIE
+            if(sales.getSize() > 0) for(int salesIndex = 0; salesIndex < products.getSize(); salesIndex++){
+                String[] vals = sales.get(salesIndex).split(",");
+                pieChart.setValue(vals[1], Integer.parseInt(vals[0]));
             }
         }
     }
@@ -127,7 +163,9 @@ public class ManageProducts extends XFrame {
         // COMPONENTES
         pieChart = new XPieChart("Mas vendidos");
         barChart = new XBarChart("Rango de precios", "Precio", "Cantidad");
-        updateChart();
+
+        // CHARTS
+        new XInterval(e -> updateChart(), 500);
 
         // POSICIONES
         pieChart.chartPanel.setBounds(0,0,getWidth() - 170,getHeight() - 115 );
@@ -164,7 +202,8 @@ public class ManageProducts extends XFrame {
         table.setFillsViewportHeight(true);
 
         // DATOS INICIALES
-        updateTable();
+        new XInterval(e -> updateTable(), 500);
+
         updateChart();
 
         // UPLOAD PANEL
@@ -191,7 +230,9 @@ public class ManageProducts extends XFrame {
 
                         if(vName && productController.getSize() <= 100) {
                             // AGREGAR LOCAL
-                            productController.addData(data);
+                            if(data.size > 0)
+                                productController.addData(data);
+                            else XAlert.showError("Error al agregar", "La cantidad debe ser mayor que 0");
 
                             // AGREGAR A TABLA
                             updateTable();
@@ -221,7 +262,7 @@ public class ManageProducts extends XFrame {
         tabs.addTab(tabsName[2], dashboard);
     }
 
-    private void clientForm(boolean update, boolean editable) {
+    private void productForm(boolean update, boolean editable) {
         // PEDIR NIT PRIMERO
         String tmpName = "";
         Product initialProduct = null;
@@ -263,16 +304,16 @@ public class ManageProducts extends XFrame {
         if (initialProduct != null)
             imageURL[0] = initialProduct.image;
 
-        XField name = new XField("Nombre: ", 200, initialProduct != null?initialProduct.name:"", editable);
+        XField name = new XField("Nombre: ", 380, initialProduct != null?initialProduct.name:"", editable);
         XField price = new XField("Precio: ", 200, initialProduct != null?Float.toString(initialProduct.price):"", editable);
-        XField size = new XField("Cantidad: ", 200, initialProduct != null?Integer.toString(initialProduct.size):"", editable);
+        XSpinnerField size = new XSpinnerField("Cantidad: ", 1, Integer.MAX_VALUE,152, initialProduct != null?initialProduct.size:1, editable);
         XLabel imageLabel = new XLabel("Imagen: ");
         XButton imageBtn = new XButton("Seleccionar imagen", new Color(150, 150, 150), Color.white);
         XButton cancelBtn = new XButton("Cancelar", new Color(0,0,0,0), new Color(80,80,80));
         XButton confirmBtn = new XButton(!editable?"Aceptar":update?"Modificar":"Crear");
         BufferedImage image = null;
         try {
-            image = ImageIO.read(new File(initialProduct != null?initialProduct.image:"./src/images/profile.png"));
+            image = ImageIO.read(new File(initialProduct != null?initialProduct.image:"./src/images/product.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -281,9 +322,9 @@ public class ManageProducts extends XFrame {
             picLabel = new JLabel(new ImageIcon(image));
 
         // POSICIONES
-        name.setBounds(0,10,200,90);
+        name.setBounds(0,10,380,90);
         price.setBounds(0,100,200,90);
-        size.setBounds(180,10,200,90);
+        size.setBounds(202,100,152,90);
         imageLabel.setBounds(25, 210, 150, 30);
         imageBtn.setBounds(25, 250, 150, 50);
         cancelBtn.setBounds(155, 340, 100, 50);
@@ -317,13 +358,13 @@ public class ManageProducts extends XFrame {
         confirmBtn.onClick((e) -> {
             if(editable) {
                 // VERIFICAR
-                boolean verifyLength = (name.getData().length() * price.getData().length() * size.getData().length() * imageURL[0].length()) > 0;
+                boolean verifyLength = (name.getData().length() * price.getData().length() * size.getData() * imageURL[0].length()) > 0;
                 boolean vName = name.getData().length() > 0 && verifyName(name.getData(), update ? finalTmpName : "");
 
                 // VERIFICAR
                 if (verifyLength && vName) {
                     // AGREGAR CLIENTE
-                    Product data = new Product(name.getData(), Float.parseFloat(price.getData()), Integer.parseInt(size.getData()), imageURL[0]);
+                    Product data = new Product(name.getData(), Float.parseFloat(price.getData()), size.getData(), imageURL[0]);
                     if (!update) productController.addData(data);
                     else productController.replaceData(finalInitialProduct, data);
 
@@ -358,9 +399,9 @@ public class ManageProducts extends XFrame {
         XActionPanel resetProducts = new XActionPanel("Reiniciar dashboard", "Borra todos los datos existentes en el dashboard.", "Borrar todo", new Color(70, 70, 70),new Color(244,67,54));
 
         // EVENTOS
-        createProduct.setAction((e) -> clientForm(false, true));
-        updateProduct.setAction((e) -> clientForm(true, true));
-        readProduct.setAction((e) -> clientForm(true, false));
+        createProduct.setAction((e) -> productForm(false, true));
+        updateProduct.setAction((e) -> productForm(true, true));
+        readProduct.setAction((e) -> productForm(true, false));
         deleteProduct.setAction((e) ->{
             if(productController.getSize() == 0) XAlert.showError("Sin productos", "Aun no existen productos registrados");
             else {

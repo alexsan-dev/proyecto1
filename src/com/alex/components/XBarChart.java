@@ -7,6 +7,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class XBarChart {
     public DefaultCategoryDataset dts;
@@ -21,6 +22,7 @@ public class XBarChart {
 
         // PANEL
         chartPanel = new ChartPanel(jBarChart);
+        chartPanel.setBackground(new Color(220, 220, 220));
     }
 
     public void setValue(int label, int count){

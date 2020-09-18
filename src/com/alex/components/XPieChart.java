@@ -6,6 +6,7 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.data.general.DefaultPieDataset;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class XPieChart {
     public DefaultPieDataset dts;
@@ -20,6 +21,7 @@ public class XPieChart {
 
         // PANEL
         chartPanel = new ChartPanel(jPieChart);
+        chartPanel.setBackground(new Color(220, 220, 220));
     }
 
     public void setValue(String text, int count){

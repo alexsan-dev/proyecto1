@@ -7,6 +7,7 @@ public class XLabel extends JLabel {
 
     public XLabel(String text) {
         // LABEL NAME
+        setBackground(new Color(0,0,0,0));
         setText(text);
 
         // PROPIEDADES

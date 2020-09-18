@@ -34,6 +34,12 @@ public class LinkedList<T> implements Serializable {
         this.index++;
     }
 
+    public LinkedList<T> clone(){
+        LinkedList<T> out = new LinkedList<>();
+        for(int index = 0; index < getSize();index++) out.add(get(index));
+        return out;
+    }
+
     // BUSCAR NODO
     public Node<T> find(Object item) {
         // NODO BASE

@@ -24,8 +24,31 @@ public class ProductController {
 
     public void clear() { dataList = new LinkedList<>(); }
 
+    public String[] getNames(){
+        // SALIDA
+        String[] out = new String[dataList.getSize()];
+
+        // NITS
+        for(int index = 0; index < out.length; index++)
+            out[index] = dataList.get(index).name;
+
+        return out;
+    }
+
     public Product get(int index){
         return dataList.get(index);
+    }
+
+    public Product getByName(String name){
+        Product out = null;
+
+        for(int index = 0; index < dataList.getSize(); index++)
+            if(dataList.get(index).name.equals(name)){
+                out = dataList.get(index);
+                break;
+            }
+
+        return out;
     }
 
     public String toCsv(){

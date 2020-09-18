@@ -274,7 +274,7 @@ public class ManageClients extends XFrame {
 
         XField name = new XField("Nombre: ", 200, initialClient != null?initialClient.name:"", editable);
         XField age = new XField("Edad: ", 200, initialClient != null?Integer.toString(initialClient.age):"", editable);
-        XField sex = new XField("Sexo: ", 200, initialClient != null?Character.toString(initialClient.sex):"", editable);
+        XComboField sex = new XComboField("Sexo", new String[]{"M", "F"}, 152, initialClient != null?Character.toString(initialClient.sex):"", editable);
         XField nit = new XField("NIT: ", 200, initialClient != null?Integer.toString(initialClient.nit):"", editable);
         XLabel imageLabel = new XLabel("Avatar: ");
         XButton imageBtn = new XButton("Seleccionar imagen", new Color(150, 150, 150), Color.white);
@@ -293,7 +293,7 @@ public class ManageClients extends XFrame {
         // POSICIONES
         name.setBounds(0,10,200,90);
         age.setBounds(0,100,200,90);
-        sex.setBounds(180,10,200,90);
+        sex.setBounds(204,10,152,90);
         nit.setBounds(180, 100, 200, 90);
         imageLabel.setBounds(25, 210, 150, 30);
         imageBtn.setBounds(25, 250, 150, 50);
