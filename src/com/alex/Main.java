@@ -1,5 +1,6 @@
 package com.alex;
 
+import com.alex.controllers.SigningController;
 import com.alex.views.Auth;
 
 import javax.swing.*;
@@ -13,7 +14,10 @@ class Main {
             e.printStackTrace();
         }
 
+        // CONTROLADOR DE USUARIOS
+        SigningController signingController = new SigningController();
+
         // INICIAR AUTH
-        new Auth();
+        new Auth(signingController);
     }
 }

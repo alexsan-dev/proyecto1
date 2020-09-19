@@ -4,7 +4,6 @@ import com.alex.components.*;
 import com.alex.controllers.ProductController;
 import com.alex.controllers.SalesController;
 import com.alex.data.Product;
-import com.alex.data.Sell;
 import com.alex.structures.LinkedList;
 
 import javax.imageio.ImageIO;
@@ -98,41 +97,41 @@ public class ManageProducts extends XFrame {
     public void updateChart(){
         // CONTAR PRECIOS
         LinkedList<String> products = new LinkedList<>();
+        int quarter = 0, half = 0, seventy = 0, expensive = 0;
+
         for(int index = 0; index < productController.getSize(); index++){
             // PRECIO
             float currentPrice = productController.get(index).price;
-            int count = 0;
 
-            // CONTAR
-            for(int subIndex = 0; subIndex < productController.getSize(); subIndex++)
-                if (productController.get(subIndex).price == currentPrice) count++;
-
-            // AGREGAR
-            products.add(currentPrice + "," + count);
+            // RANGOS
+            if(currentPrice >= 0 && currentPrice <= 100) quarter++;
+            else if(currentPrice > 100 && currentPrice <= 250) half++;
+            else if(currentPrice > 250 && currentPrice <= 500) seventy++;
+            else if(currentPrice > 500) expensive++;
         }
+        products.add("0 - 100" + "," + quarter);
+        products.add("100 - 250" + "," + half);
+        products.add("250 - 500" + "," + seventy);
+        products.add("> 500" + "," + expensive);
 
         // CONTAR VENTAS
-        LinkedList<Sell> tmpSales = salesController.dataList.clone();
         LinkedList<String> sales = new LinkedList<>();
-        for(int index = 0; index < tmpSales.getSize(); index++){
-            if(tmpSales.get(index) != null) {
-                // PRODUCTO
-                Sell currentSell = tmpSales.get(index);
-                String name = currentSell.product;
-                int size = 0;
+        for(int productsIndex = 0; productsIndex < productController.getSize(); productsIndex++){
+            // PRODUCTO
+            String name = productController.get(productsIndex).name;
+            int total = 0;
 
-                // CANTIDAD
-                for (int subIndex = 0; subIndex < tmpSales.getSize(); subIndex++)
-                    if(tmpSales.get(subIndex).product.equals(name))
-                        size += tmpSales.get(subIndex).size;
-
-                for (int subIndex = 0; subIndex < tmpSales.getSize(); subIndex++)
-                    if(tmpSales.get(subIndex).product.equals(name))
-                        tmpSales.delete(tmpSales.get(subIndex));
-
-                // AGREGAR
-                sales.add(size + "," + name);
+            // BUSCAR
+            for(int salesIndex = 0; salesIndex < salesController.getSize(); salesIndex++){
+                for(int sPrIndex = 0; sPrIndex < salesController.get(salesIndex).products.getSize(); sPrIndex++){
+                    if(salesController.get(salesIndex).products.get(sPrIndex).name.equals(name)) {
+                        total += Integer.parseInt(salesController.get(salesIndex).sizes.get(sPrIndex));
+                    }
+                }
             }
+
+            // AGREGAR
+            sales.add(name + "," + total);
         }
 
         // DATASET
@@ -144,13 +143,13 @@ public class ManageProducts extends XFrame {
             // BARRAS
             for(int dataIndex = 0; dataIndex < products.getSize(); dataIndex++){
                 String[] vals = products.get(dataIndex).split(",");
-                barChart.setValue(Float.parseFloat(vals[0]), Integer.parseInt(vals[1]));
+                barChart.setValue(vals[0], Integer.parseInt(vals[1]));
             }
 
             // PIE
-            if(sales.getSize() > 0) for(int salesIndex = 0; salesIndex < products.getSize(); salesIndex++){
-                String[] vals = sales.get(salesIndex).split(",");
-                pieChart.setValue(vals[1], Integer.parseInt(vals[0]));
+            for(int dataIndex = 0; dataIndex < sales.getSize(); dataIndex++){
+                String[] vals = sales.get(dataIndex).split(",");
+                pieChart.setValue(vals[0], Integer.parseInt(vals[1]));
             }
         }
     }
@@ -225,7 +224,7 @@ public class ManageProducts extends XFrame {
 
                     // VERIFICAR
                     if (productController != null) {
-                        // VERIFICAR NIT
+                        // VERIFICAR NOMBRE
                         boolean vName = verifyName(data.name, "");
 
                         if(vName && productController.getSize() <= 100) {
@@ -252,7 +251,7 @@ public class ManageProducts extends XFrame {
         scrollPane.setBackground(new Color(220, 220, 220));
         uploadPanel.setBounds(0,getHeight() - 184, getWidth() - 150, 75);
 
-        scrollPane.setBounds(0,0, getWidth() - 150, getHeight() - 180);
+        scrollPane.setBounds(0,0, getWidth() - 150, getHeight() - 185);
 
         // DASHBOARD
         dashboard.add(scrollPane);
@@ -308,7 +307,7 @@ public class ManageProducts extends XFrame {
         XField price = new XField("Precio: ", 200, initialProduct != null?Float.toString(initialProduct.price):"", editable);
         XSpinnerField size = new XSpinnerField("Cantidad: ", 1, Integer.MAX_VALUE,152, initialProduct != null?initialProduct.size:1, editable);
         XLabel imageLabel = new XLabel("Imagen: ");
-        XButton imageBtn = new XButton("Seleccionar imagen", new Color(150, 150, 150), Color.white);
+        XButton imageBtn = new XButton("Seleccionar", new Color(150, 150, 150), Color.white);
         XButton cancelBtn = new XButton("Cancelar", new Color(0,0,0,0), new Color(80,80,80));
         XButton confirmBtn = new XButton(!editable?"Aceptar":update?"Modificar":"Crear");
         BufferedImage image = null;
@@ -327,8 +326,8 @@ public class ManageProducts extends XFrame {
         size.setBounds(202,100,152,90);
         imageLabel.setBounds(25, 210, 150, 30);
         imageBtn.setBounds(25, 250, 150, 50);
-        cancelBtn.setBounds(155, 340, 100, 50);
-        confirmBtn.setBounds(255, 340, 100, 50);
+        cancelBtn.setBounds(100, 340, 130, 50);
+        confirmBtn.setBounds(225, 340, 130, 50);
         if (picLabel != null)
             picLabel.setBounds(230, 208, 115, 115);
 
@@ -361,8 +360,11 @@ public class ManageProducts extends XFrame {
                 boolean verifyLength = (name.getData().length() * price.getData().length() * size.getData() * imageURL[0].length()) > 0;
                 boolean vName = name.getData().length() > 0 && verifyName(name.getData(), update ? finalTmpName : "");
 
+                // LONGITUD
+                if(productController.getSize() >= 100) XAlert.showError("Error al agregar", "El numero maximo de productos es 100");
+
                 // VERIFICAR
-                if (verifyLength && vName) {
+                else if (verifyLength && vName) {
                     // AGREGAR CLIENTE
                     Product data = new Product(name.getData(), Float.parseFloat(price.getData()), size.getData(), imageURL[0]);
                     if (!update) productController.addData(data);

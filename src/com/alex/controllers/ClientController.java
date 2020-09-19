@@ -1,6 +1,7 @@
 package com.alex.controllers;
 
 import com.alex.data.Client;
+import com.alex.data.Product;
 import com.alex.structures.LinkedList;
 
 public class ClientController {
@@ -31,6 +32,18 @@ public class ClientController {
         // NITS
         for(int index = 0; index < out.length; index++)
             out[index] = Integer.toString(dataList.get(index).nit);
+
+        return out;
+    }
+
+    public Client getByNit(int nit){
+        Client out = null;
+
+        for(int index = 0; index < dataList.getSize(); index++)
+            if(dataList.get(index).nit == nit){
+                out = dataList.get(index);
+                break;
+            }
 
         return out;
     }

@@ -11,7 +11,7 @@ public class XButton extends JButton {
 
     public XButton(String text){
         // GLOBAL
-        super(text);
+        super(text.toUpperCase());
         this.color = new Color(255, 255, 255);
         this.background = new Color(33,150,243);
 
@@ -22,7 +22,7 @@ public class XButton extends JButton {
 
     public XButton(String text, Color background, Color color){
         // GLOBAL
-        super(text);
+        super(text.toUpperCase());
         this.color = color;
         this.background = background;
 
@@ -57,6 +57,6 @@ public class XButton extends JButton {
         setCursor(new Cursor(Cursor.HAND_CURSOR));
         setForeground(color);
         setFont(new Font("Lato", Font.BOLD, 13));
-        setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        setBorder(BorderFactory.createEmptyBorder(15, 25, 15, 25));
     }
 }

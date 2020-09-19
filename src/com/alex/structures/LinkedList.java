@@ -154,6 +154,14 @@ public class LinkedList<T> implements Serializable {
         return auxNode.value;
     }
 
+    // ARRAY
+    @SuppressWarnings("unchecked")
+    public T[] toArray(){
+        T[] tmpArry = (T[]) new Object[getSize()];
+        for(int index = 0; index < getSize(); index++) tmpArry[index] = get(index);
+        return tmpArry;
+    }
+
     // OBTENER DIMENSION
     public int getSize() {
         return this.index;

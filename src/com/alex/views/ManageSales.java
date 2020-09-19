@@ -6,6 +6,7 @@ import com.alex.controllers.ProductController;
 import com.alex.controllers.SalesController;
 import com.alex.data.Product;
 import com.alex.data.Sell;
+import com.alex.structures.LinkedList;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -16,7 +17,7 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class ManageSales extends XFrame {
-    private final String[] tabsName = { "Ventas", "Editar" };
+    private final String[] tabsName = { "Ventas", "Datos" };
     private final SalesController salesController;
     private final ProductController productController;
     private final ClientController clientController;
@@ -48,19 +49,6 @@ public class ManageSales extends XFrame {
 
         // AGREGAR
         addComponent(tabs);
-    }
-
-    private boolean vCode(int code, int exclude){
-        // VERIFICAR NIT
-        boolean vCode = true;
-        for (int codesIndex = 0; codesIndex < salesController.getSize(); codesIndex++){
-            if(salesController.get(codesIndex).code == code && (exclude == -1 || salesController.get(codesIndex).code != exclude)) {
-                vCode = false;
-                break;
-            }
-        }
-
-        return vCode;
     }
 
     public void updateTable(){
@@ -126,27 +114,18 @@ public class ManageSales extends XFrame {
             File dataFile = chooser.getSelectedFile();
             try {
                 // LEER Y GUARDAR
-                Scanner fileReader = new Scanner(dataFile);
-                while(fileReader.hasNextLine()){
-                    // CREAR OBJETO
-                    String[] dataLine = fileReader.nextLine().split(",");
-                    Sell data = new Sell(Integer.parseInt(dataLine[0]), Integer.parseInt(dataLine[1]), dataLine[2], Integer.parseInt(dataLine[3]));
+                if(dataFile != null) {
+                    Scanner fileReader = new Scanner(dataFile);
+                    while (fileReader.hasNextLine()) {
+                        // LEER VALORES
+                        String[] dataLine = fileReader.nextLine().split(",");
+                        int tmpCode = Integer.parseInt(dataLine[0]);
+                        int tmpNit = Integer.parseInt(dataLine[1]);
+                        int size = Integer.parseInt(dataLine[3]);
+                        String product = dataLine[2];
 
-                    // VERIFICAR
-                    if (salesController != null) {
-                        // VERIFICAR NIT
-                        boolean vCode = vCode(data.code, -1);
-
-                        if(vCode && salesController.getSize() <= 100) {
-                            // AGREGAR LOCAL
-                            updateProducts(data);
-
-                            // AGREGAR A TABLA
-                            updateTable();
-                            if(product != null) updateProductList(product);
-                        } else if(salesController.getSize() > 100) XAlert.showError("Error al agregar", "El numero maximo de ventas es de 100");
-                        else if(!vCode) XAlert.showError("Error al agregar", "Ya existe una venta con el mismo código");
-
+                        // VENDER
+                        sellProducts(tmpCode, tmpNit, product, size);
                     }
                 }
             } catch (FileNotFoundException fileNotFoundException) {
@@ -159,7 +138,7 @@ public class ManageSales extends XFrame {
         scrollPane.setBackground(new Color(220, 220, 220));
         uploadPanel.setBounds(0,getHeight() - 184, getWidth() - 150, 75);
 
-        scrollPane.setBounds(0,0, getWidth() - 150, getHeight() - 180);
+        scrollPane.setBounds(0,0, getWidth() - 150, getHeight() - 185);
 
         // DASHBOARD
         dashboard.add(scrollPane);
@@ -169,26 +148,69 @@ public class ManageSales extends XFrame {
         tabs.addTab(tabsName[0], dashboard);
     }
 
-    private void updateProducts(Sell data){
-        // AGREGAR PRODUCTO
-        Product currentProduct = productController.getByName(data.product);
-        int selSize = data.size;
-
-        // VERIFICAR CÓDIGO
-        if(data.code > 1 && data.code != salesController.get(salesController.getSize() - 1).code + 1){
-            XAlert.showError("Error al vender", "El código no es valido");
-            return;
-        }
-
-            // VERIFICAR EXISTENCIA
-        if(currentProduct.size - selSize >= 0) {
+    private void updateProducts(int size, Product currentProduct, Sell data, boolean isNew){
+        // VERIFICAR EXISTENCIA
+        if(currentProduct.size - size >= 0) {
             // REDUCIR CANTIDAD EN
-            Product tmpProduct = new Product(currentProduct.name, currentProduct.price, currentProduct.size - selSize, currentProduct.image);
+            Product tmpProduct = new Product(currentProduct.name, currentProduct.price, currentProduct.size - size, currentProduct.image);
             productController.replaceData(currentProduct, tmpProduct);
 
             // AGREGAR VENTA
-            salesController.addData(data);
-        } else XAlert.showError("Error al vender", "Ya no existen mas productos " + currentProduct.name + "en inventario");
+            if(isNew)
+                salesController.addData(data);
+            else{
+                Sell tmpSell = salesController.getByCode(data.code);
+                salesController.replaceData(tmpSell, data);
+            }
+        } else XAlert.showError("Error al vender", "Ya no existen mas productos " + currentProduct.name + " en inventario");
+    }
+
+    private void sellProducts(int code, int nit, String product, int size){
+        // PRODUCTO
+        Product tmpProduct = productController.getByName(product);
+
+        // VENTA
+        Sell tmpSell = salesController.getByCode(code);
+        if(tmpSell == null){
+            if(salesController.getSize() >= 1 && code != salesController.get(salesController.getSize() - 1).code + 1) XAlert.showError("Error al vender", "El correlativo de venta no es valido.");
+            else {
+                // CREAR LISTAS
+                LinkedList<Product> sellProducts = new LinkedList<>();
+                LinkedList<String> sizes = new LinkedList<>();
+                LinkedList<String> ivas = new LinkedList<>();
+
+                // IVA
+                float iva = (float) (tmpProduct.price * 0.12 * size);
+
+                // AGREGAR A LISTA
+                sellProducts.add(tmpProduct);
+                sizes.add(Integer.toString(size));
+                ivas.add(Float.toString(iva));
+
+                Sell newSell = new Sell(code, nit, sizes, ivas, sellProducts);
+
+                // REDUCIR CANTIDAD DE PRODUCTOS
+                updateProducts(size, tmpProduct, newSell, true);
+                updateTable();
+            }
+        } else{
+            // VENDER
+            if(tmpSell.products.getSize() < 5) {
+                // IVA
+                float iva = (float) (tmpProduct.price * 0.12 * size);
+
+                // AGREGAR
+                tmpSell.products.add(tmpProduct);
+                tmpSell.sizes.add(Integer.toString(size));
+                tmpSell.ivas.add(Float.toString(iva));
+            }
+
+            else XAlert.showError("Error al vender", "La cantidad maxima de productos por venta es 5");
+
+            // REDUCIR CANTIDAD DE PRODUCTOS
+            updateProducts(size, tmpProduct, tmpSell, false);
+            updateTable();
+        }
     }
 
     private Product[] updateProductList(XComboField product){
@@ -196,9 +218,8 @@ public class ManageSales extends XFrame {
         product.clear();
 
         // AGREGAR
-        for(int index = 0; index < productController.getSize(); index++) {
+        for(int index = 0; index < productController.getSize(); index++)
             if (productController.get(index).size > 0) product.addItem(productController.get(index).name);
-        }
 
         // ARRAY
         String[] names = product.toArray();
@@ -212,7 +233,6 @@ public class ManageSales extends XFrame {
 
     private void sellForm(boolean editable) {
         // PEDIR NIT PRIMERO
-        int tmpCode = -1;
         Sell initialSell = null;
 
         // BUSCAR CLIENTE
@@ -223,8 +243,8 @@ public class ManageSales extends XFrame {
             }
 
             // NIT
-            tmpCode = Integer.parseInt(XAlert.showPrompt("Ingresar código"));
-            if(tmpCode != -1){
+            int tmpCode = Integer.parseInt(XAlert.showPrompt("Ingresar código"));
+            if(tmpCode >= 0){
                 initialSell = findByCode(tmpCode);
 
                 if(initialSell == null) {
@@ -248,7 +268,7 @@ public class ManageSales extends XFrame {
 
         // CREAR FRAME
         XFrame creationForm = new XFrame();
-        creationForm.setFrame((!editable?"Ver":"Crear")+" Venta", 380, 390);
+        creationForm.setFrame((!editable?"Ver":"Crear")+" Venta", 380, !editable?565:390);
         creationForm.setHeader(!editable?"Obtener datos de una venta":"Agrega datos a una venta", !editable?"Ver datos completos de la venta":"El código de la venta debe ser nuevo.");
 
         // VALORES INICIALES
@@ -257,79 +277,185 @@ public class ManageSales extends XFrame {
         String[] products = productController.getNames();
 
         // COMPONENTES
-        product = new XComboField("Producto: ", products, 152, initialSell != null?initialSell.product:"", editable);
+        product = new XComboField("Producto: ", products, 152, initialSell != null?initialSell.products.get(0).name:"", editable);
         Product[] newProducts = updateProductList(product);
+        int defMax = !editable?Integer.parseInt(initialSell.sizes.get(0)):newProducts[0].size;
 
         XField code = new XField("Código: ", 200, initialSell != null?Integer.toString(initialSell.code):Integer.toString(initialCode + 1), false);
         XComboField nit = new XComboField("NIT: ", nits,152, initialSell != null?Integer.toString(initialSell.nit):"", editable);
-        XSpinnerField size = new XSpinnerField("Cantidad: ",1, newProducts[0].size, 152, initialSell != null?initialSell.size:1, editable);
+        XSpinnerField size = new XSpinnerField("Cantidad: ",!editable?0:1, defMax, 152, initialSell != null?Integer.parseInt(initialSell.sizes.get(0)):1, editable);
         XButton cancelBtn = new XButton("Cancelar", new Color(0,0,0,0), new Color(80,80,80));
         XButton confirmBtn = new XButton(!editable?"Aceptar":"Crear");
 
+        // VISTA GENERAL
+        if(!editable) {
+            // COMPONENTES
+            XLabel sellsLabel = new XLabel("Productos: ");
+            float ivasTotal = 0;
+            float priceTotal = 0;
+
+            // RECORRER VENTAS
+            for (int dIndex = 0; dIndex < 5; dIndex++) {
+                // CREAR LABEL
+                XLabel tmpLabel;
+                if(initialSell.products.get(dIndex) != null) {
+                    tmpLabel = new XLabel(initialSell.sizes.get(dIndex) + " de " + initialSell.products.get(dIndex).name + " con Q" + initialSell.ivas.get(dIndex) + " iva");
+                    ivasTotal += Float.parseFloat(initialSell.ivas.get(dIndex));
+                    priceTotal += initialSell.products.get(dIndex).price * Integer.parseInt(initialSell.sizes.get(dIndex));
+                } else tmpLabel = new XLabel("-------------------------------");
+
+                // POSICIONES
+                tmpLabel.setBounds(25, 140 + (dIndex * 30), 380, 40);
+                creationForm.addComponent(tmpLabel);
+            }
+
+            // LABEL DE TOTAL
+            XLabel ivasTotalLabel = new XLabel("Total IVA: Q" + ivasTotal);
+            XLabel pricesTotalLabel = new XLabel("Total de venta: Q" + priceTotal);
+
+            // POSICIONES
+            ivasTotalLabel.setBounds(25, 290, 200, 40);
+            pricesTotalLabel.setBounds(25, 330, 300, 40);
+            sellsLabel.setBounds(25, 110, 200, 40);
+
+            // AGREGAR
+            creationForm.addComponent(sellsLabel);
+            creationForm.addComponent(pricesTotalLabel);
+            creationForm.addComponent(ivasTotalLabel);
+        }
+
+
         // EVENTOS
-        product.setListener(e -> size.setRange(1, newProducts[product.getIndex()].size));
+        product.setListener(e -> {
+            int tmpIndex = Math.max(product.getIndex(), 0);
+            size.setRange(1, newProducts[tmpIndex].size);
+        });
 
         // POSICIONES
         code.setBounds(0,10,200,90);
         nit.setBounds(202,10,152,90);
-        product.setBounds(25,100,152,90);
-        size.setBounds(202, 100, 152, 90);
-        cancelBtn.setBounds(155, 210, 100, 50);
-        confirmBtn.setBounds(255, 210, 100, 50);
+
+        if(editable) {
+            product.setBounds(25, 100, 152, 90);
+            size.setBounds(202, 100, 152, 90);
+        }
+
+        cancelBtn.setBounds(100, !editable?380:210, 130, 50);
+        confirmBtn.setBounds(225, !editable?380:210, 130, 50);
 
         // CANCEL
         cancelBtn.onClick((e) -> creationForm.dispose());
 
         // CONFIRMAR
-        int finalTmpCode = tmpCode;
         confirmBtn.onClick((e) -> {
             if(editable) {
                 // VERIFICAR
                 boolean verifyLength = (code.getData().length() * nit.getData().length() * size.getData() * product.getData().length()) > 0;
-                boolean vCode = code.getData().length() > 0 && vCode(Integer.parseInt(code.getData()), finalTmpCode);
+
+                // LONGITUD
+                if(salesController.getSize() >= 100) XAlert.showError("Error al agregar", "El numero maximo de ventas es 100");
 
                 // VERIFICAR
-                if (verifyLength && vCode) {
-                    // AGREGAR CLIENTE
-                    Sell data = new Sell(Integer.parseInt(code.getData()), Integer.parseInt(nit.getData()),product.getData(), size.getData());
-                    updateProducts(data);
+                if (verifyLength) {
+                    // VENDER
+                    sellProducts(Integer.parseInt(code.getData()), Integer.parseInt(nit.getData()), product.getData(), size.getData());
 
-                    // CERRAR Y ACTUALIZAR
-                    updateTable();
-                    creationForm.dispose();
+                    // CERRAR
                     updateProductList(product);
-                } else if (!verifyLength)
-                    XAlert.showError("Error al crear" ,"Todos los campos son requeridos.");
-                else XAlert.showError("Error al crear", "El código ya esta registrado.");
+                    creationForm.dispose();
+                } else XAlert.showError("Error al crear" ,"Todos los campos son requeridos.");
             } else creationForm.dispose();
         });
 
         // AGREGAR
         creationForm.addComponent(code);
         creationForm.addComponent(nit);
-        creationForm.addComponent(product);
-        creationForm.addComponent(size);
+
+        if(editable) {
+            creationForm.addComponent(product);
+            creationForm.addComponent(size);
+        }
+
         creationForm.addComponent(cancelBtn);
         creationForm.addComponent(confirmBtn);
+    }
+
+    private void detailForm(){
+        // CONFIGURAR PANEL
+        XFrame detail = new XFrame();
+        detail.setFrame("Detalle de ventas", 325, 328);
+        detail.setHeader("Información completa", "Aquí se detallan todas las ventas");
+
+        // DATOS
+        float totalCount = salesController.getTotalSell();
+        float totalIVA = salesController.getTotalIVA();
+        int totalSell = salesController.getMaxSize();
+        float totalPrice = salesController.getMaxSell();
+
+        // COMPONENTES
+        XLabel total = new XLabel("Total de ventas:" );
+        XLabel iva = new XLabel("Total de IVA:");
+        XLabel maxProducts = new XLabel("Mas vendidos:");
+        XLabel maxPrice = new XLabel("Mayor venta:");
+
+        XButton totalBtn = new XButton("Q"+totalCount);
+        XButton ivaBtn = new XButton("Q"+totalIVA);
+        XButton maxPBtn = new XButton(totalSell + "");
+        XButton maxPrBtn = new XButton("Q"+totalPrice);
+
+        // POSICIONES
+        total.setBounds(25, 15, 150, 40);
+        iva.setBounds(25, 65, 150, 40);
+        maxProducts.setBounds(25, 115, 150, 40);
+        maxPrice.setBounds(25, 165, 150, 40);
+
+        totalBtn.setBounds(170, 15, 130, 40);
+        ivaBtn.setBounds(170, 65, 130, 40);
+        maxPBtn.setBounds(170, 115, 130, 40);
+        maxPrBtn.setBounds(170, 165, 130, 40);
+
+        // PROPIEDADES
+        totalBtn.setEnabled(false);
+        ivaBtn.setEnabled(false);
+        maxPBtn.setEnabled(false);
+        maxPrBtn.setEnabled(false);
+
+        // AGREGAR
+        detail.addComponent(total);
+        detail.addComponent(iva);
+        detail.addComponent(maxProducts);
+        detail.addComponent(maxPrice);
+        detail.addComponent(totalBtn);
+        detail.addComponent(ivaBtn);
+        detail.addComponent(maxPBtn);
+        detail.addComponent(maxPrBtn);
     }
 
     private void crud(XTabPane tabs){
         // COMPONENTES
         JPanel optionsPanel = new JPanel(null);
         XActionPanel createSell = new XActionPanel("Ventas nuevas", "Crea una venta desde un formulario.", "Crear venta");
-        XActionPanel readSell = new XActionPanel("Obtener información", "Busca una venta por su código.", "Ver venta");
+        XActionPanel readSell = new XActionPanel("Obtener venta", "Busca una venta por su código.", "Ver venta");
+        XActionPanel detailSell = new XActionPanel("Obtener información", "Ver detalles de todas las ventas.", "Ver detalle");
 
         // EVENTOS
-        createSell.setAction((e) -> sellForm(true));
-        readSell.setAction((e) -> sellForm(false));
+        createSell.setAction(e -> sellForm(true));
+        readSell.setAction(e -> sellForm(false));
+        detailSell.setAction(e -> {
+            if(salesController.getSize() > 0)
+                detailForm();
+            else XAlert.showError("Error al obtener", "Aun no existen ventas registradas");
+        });
 
         // PROPIEDADES
         createSell.setBounds(0, 0, getWidth() - 150, 75);
         readSell.setBounds(0, 75, getWidth() - 150, 75);
+        detailSell.setBounds(0, 150, getWidth() - 150, 75);
 
         // AGREGAR A PANEL
         optionsPanel.add(createSell);
         optionsPanel.add(readSell);
+        optionsPanel.add(detailSell);
 
         // PROPIEDADES
         optionsPanel.setBackground(new Color(220, 220, 220));

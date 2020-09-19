@@ -11,7 +11,7 @@ public class XActionPanel extends JPanel {
     private XButton button;
 
     public void constructor(String title, String subTitle, String buttonText, Color background, Color btnColor){
-        setLayout(new FlowLayout(FlowLayout.CENTER));
+        setLayout(new BorderLayout());
 
         // PANEL
         textPanel = new JPanel(new GridLayout(2, 1));
@@ -22,7 +22,7 @@ public class XActionPanel extends JPanel {
         button = new XButton(buttonText, btnColor, Color.white);
 
         // PROPIEDADES
-        setBorder(new EmptyBorder(10,25,10,25));
+        setBorder(new EmptyBorder(15,25,15,28));
         setBackground(background);
         setProperties(background);
     }
@@ -44,8 +44,8 @@ public class XActionPanel extends JPanel {
         textPanel.add(label);
         textPanel.add(subLabel);
 
-        add(textPanel);
-        add(button);
+        add(textPanel, BorderLayout.LINE_START);
+        add(button, BorderLayout.LINE_END);
     }
 
     public JLabel getLabel(String text, int size, Color background){

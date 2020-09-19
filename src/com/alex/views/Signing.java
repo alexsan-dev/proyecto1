@@ -2,17 +2,20 @@ package com.alex.views;
 
 import com.alex.components.*;
 import com.alex.controllers.SigningController;
-import com.alex.controllers.UserModelController;
+import com.alex.data.User;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
 
 public class Signing extends XFrame {
     private static final long serialVersionUID = 1L;
+    private final SigningController signingController;
 
-    public Signing() {
+    public Signing(SigningController signingController) {
         setFrame("Registro de usuarios", 350, 580);
         setHeader("Gracias por crear una cuenta", "Inicia sesión si ya tienes una cuenta.");
+
+        this.signingController = signingController;
     }
 
     @Override
@@ -31,22 +34,22 @@ public class Signing extends XFrame {
         pass.setBounds(0,190,350,90);
         confirmPass.setBounds(0,280,350,90);
 
-        signingBtn.setBounds(55, 395, 130, 50);
-        registerBtn.setBounds(185, 395, 140, 50);
+        signingBtn.setBounds(12, 395, 150, 50);
+        registerBtn.setBounds(155, 395, 170, 50);
 
         // EVENTOS
         ActionListener signing = (e) ->{
-            new Auth();
+            new Auth(signingController);
             this.dispose();
         };
 
         ActionListener createUser = (e) -> {
             // CREAR CONTROLADOR DE USUARIOS
-            UserModelController userController = new UserModelController(user.getData(), name.getData(), pass.getData(), true);
-            SigningController controller = new SigningController(userController, confirmPass.getData());
-
-            // CERRAR VENTANA
-            if(controller.getVerify()) this.dispose();
+            if(!pass.getData().equals(confirmPass.getData())) XAlert.showError("Error al crear", "Las contraseñas no coinciden.");
+            else {
+                User userC = new User(user.getData(), name.getData(), pass.getData(), true);
+                signingController.addUser(userC);
+            }
         };
 
         // LISTENERS

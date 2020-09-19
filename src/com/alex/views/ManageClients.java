@@ -101,19 +101,22 @@ public class ManageClients extends XFrame {
 
         // CONTAR EDADES
         LinkedList<String> ages = new LinkedList<>();
+        int eighty = 0, thirty = 0, fifty = 0, old = 0;
+
         for(int index = 0; index < clientController.getSize(); index++){
-            // EDAD
-            int currentAge = clientController.get(index).age;
-            int count = 0;
+            // PRECIO
+            float currentAge = clientController.get(index).age;
 
-            // CONTAR
-            for(int subIndex = 0; subIndex < clientController.getSize(); subIndex++) {
-                if (clientController.get(subIndex).age == currentAge) count++;
-            }
-
-            // AGREGAR
-            ages.add(currentAge + "," + count);
+            // RANGOS
+            if(currentAge >= 0 && currentAge <= 18) eighty++;
+            else if(currentAge > 18 && currentAge <= 30) thirty++;
+            else if(currentAge > 30 && currentAge <= 50) fifty++;
+            else if(currentAge > 50) old++;
         }
+        ages.add("0 - 18" + "," + eighty);
+        ages.add("18 - 30" + "," + thirty);
+        ages.add("30 - 50" + "," + fifty);
+        ages.add("> 50" + "," + old);
 
         // DATASET
         if(pieChart != null && barChart != null) {
@@ -123,7 +126,7 @@ public class ManageClients extends XFrame {
 
             for(int dataIndex =0; dataIndex < ages.getSize(); dataIndex++){
                 String[] vals = ages.get(dataIndex).split(",");
-                barChart.setValue(Integer.parseInt(vals[0]), Integer.parseInt(vals[1]));
+                barChart.setValue(vals[0], Integer.parseInt(vals[1]));
             }
         }
     }
@@ -220,7 +223,7 @@ public class ManageClients extends XFrame {
         scrollPane.setBackground(new Color(220, 220, 220));
         uploadPanel.setBounds(0,getHeight() - 184, getWidth() - 150, 75);
 
-        scrollPane.setBounds(0,0, getWidth() - 150, getHeight() - 180);
+        scrollPane.setBounds(0,0, getWidth() - 150, getHeight() - 185);
 
         // DASHBOARD
         dashboard.add(scrollPane);
@@ -277,7 +280,7 @@ public class ManageClients extends XFrame {
         XComboField sex = new XComboField("Sexo", new String[]{"M", "F"}, 152, initialClient != null?Character.toString(initialClient.sex):"", editable);
         XField nit = new XField("NIT: ", 200, initialClient != null?Integer.toString(initialClient.nit):"", editable);
         XLabel imageLabel = new XLabel("Avatar: ");
-        XButton imageBtn = new XButton("Seleccionar imagen", new Color(150, 150, 150), Color.white);
+        XButton imageBtn = new XButton("Seleccionar", new Color(150, 150, 150), Color.white);
         XButton cancelBtn = new XButton("Cancelar", new Color(0,0,0,0), new Color(80,80,80));
         XButton confirmBtn = new XButton(!editable?"Aceptar":update?"Modificar":"Crear");
         BufferedImage image = null;
@@ -297,8 +300,8 @@ public class ManageClients extends XFrame {
         nit.setBounds(180, 100, 200, 90);
         imageLabel.setBounds(25, 210, 150, 30);
         imageBtn.setBounds(25, 250, 150, 50);
-        cancelBtn.setBounds(155, 340, 100, 50);
-        confirmBtn.setBounds(255, 340, 100, 50);
+        cancelBtn.setBounds(100, 340, 130, 50);
+        confirmBtn.setBounds(225, 340, 130, 50);
         if (picLabel != null)
             picLabel.setBounds(230, 208, 115, 115);
 
@@ -331,8 +334,11 @@ public class ManageClients extends XFrame {
                 boolean verifyLength = (name.getData().length() * age.getData().length() * sex.getData().length() * nit.getData().length() * avatarURL[0].length()) > 0;
                 boolean vNit = nit.getData().length() > 0 && verifyNIT(Integer.parseInt(nit.getData()), update ? finalTmpNit : -1);
 
+                // LONGITUD
+                if(clientController.getSize() >= 100) XAlert.showError("Error al agregar", "El numero maximo de ventas es 100");
+
                 // VERIFICAR
-                if (verifyLength && vNit) {
+                else if (verifyLength && vNit) {
                     // AGREGAR CLIENTE
                     Client data = new Client(name.getData(), Integer.parseInt(age.getData()), sex.getData().charAt(0), Integer.parseInt(nit.getData()), avatarURL[0]);
                     if (!update) clientController.addData(data);

@@ -24,9 +24,8 @@ public class XBarChart {
         chartPanel = new ChartPanel(jBarChart);
         chartPanel.setBackground(new Color(220, 220, 220));
     }
-
-    public void setValue(int label, int count){
-        dts.addValue(count, Integer.toString(label), Integer.toString(label));
+    public void setValue(String label, int count){
+        dts.addValue(count, label, label);
     }
     public void setValue(float label, int count){
         dts.addValue(count, Float.toString(label), Float.toString(label));
