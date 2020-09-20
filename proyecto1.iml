@@ -7,6 +7,8 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="flatlaf-0.42" level="project" />
     <orderEntry type="library" name="jfreechart-1.5.0" level="project" />
+    <orderEntry type="library" name="pdfbox-app-2.0.21" level="project" />
   </component>
 </module>

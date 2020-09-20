@@ -1,11 +1,13 @@
 package com.alex.views;
 
+import com.alex.components.XAlert;
 import com.alex.components.XButton;
 import com.alex.components.XFrame;
 import com.alex.controllers.ClientController;
 import com.alex.controllers.ProductController;
 import com.alex.controllers.SalesController;
 import com.alex.data.User;
+import com.alex.utils.Reports;
 
 import java.awt.*;
 
@@ -14,12 +16,16 @@ public class MainMenu extends XFrame {
     private final ClientController clientController;
     private final ProductController productController;
     private final SalesController salesController;
+    private final User user;
 
     public MainMenu(User user){
         // CREAR CONTROLADOR
         clientController = new ClientController();
         productController = new ProductController();
         salesController = new SalesController();
+
+        // USER
+        this.user = user;
 
         // CONFIGURAR VENTANA
         setFrame("Menu principal", 525, 315);
@@ -35,9 +41,14 @@ public class MainMenu extends XFrame {
         XButton reportsBtn = new XButton("Generar reportes");
 
         // EVENTOS
-        manageClientsBtn.onClick((e) -> new ManageClients(clientController));
-        manageProductsBtn.onClick((e) -> new ManageProducts(productController, salesController));
-        manageSalesBtn.onClick((e) -> new ManageSales(salesController, productController, clientController));
+        manageClientsBtn.onClick(e -> new ManageClients(clientController));
+        manageProductsBtn.onClick(e -> new ManageProducts(productController, salesController));
+        manageSalesBtn.onClick(e -> new ManageSales(salesController, productController, clientController));
+        reportsBtn.onClick(e ->{
+            Reports.createHTML(clientController, productController, salesController, user);
+            Reports.createPDF(user,productController,salesController,Integer.parseInt(XAlert.showPrompt("Ingresar código de venta")));
+            XAlert.showAlert("Generado", "Reportes generados exitosamente");
+        });
 
         // POSICIÓN
         manageClientsBtn.setBounds(25,25, 230, 70);

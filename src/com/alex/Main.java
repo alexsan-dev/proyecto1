@@ -2,17 +2,14 @@ package com.alex;
 
 import com.alex.controllers.SigningController;
 import com.alex.views.Auth;
+import com.formdev.flatlaf.FlatLightLaf;
 
 import javax.swing.*;
 
 class Main {
     public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-                | UnsupportedLookAndFeelException e) {
-            e.printStackTrace();
-        }
+        // LOOK AND FEEL
+        FlatLightLaf.install();
 
         // CONTROLADOR DE USUARIOS
         SigningController signingController = new SigningController();

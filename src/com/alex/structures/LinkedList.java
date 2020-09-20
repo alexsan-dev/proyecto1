@@ -156,9 +156,15 @@ public class LinkedList<T> implements Serializable {
 
     // ARRAY
     @SuppressWarnings("unchecked")
-    public T[] toArray(){
-        T[] tmpArry = (T[]) new Object[getSize()];
-        for(int index = 0; index < getSize(); index++) tmpArry[index] = get(index);
+    public String[] toArray(){
+        String[] tmpArry = new String[getSize()];
+        for(int index = 0; index < getSize(); index++) tmpArry[index] = (String) get(index);
+        return tmpArry;
+    }
+
+    public int[] toIntArray(){
+        int[] tmpArry = new int[getSize()];
+        for(int index = 0; index < getSize(); index++) tmpArry[index] = Integer.parseInt((String) get(index));
         return tmpArry;
     }
 

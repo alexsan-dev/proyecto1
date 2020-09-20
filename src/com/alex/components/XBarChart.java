@@ -17,7 +17,7 @@ public class XBarChart {
         // DATASET
         dts = new DefaultCategoryDataset();
 
-        // PIE
+        // BARRAS
         JFreeChart jBarChart = ChartFactory.createBarChart(title, xLabel, yLabel, dts, PlotOrientation.VERTICAL, true, true, false);
 
         // PANEL

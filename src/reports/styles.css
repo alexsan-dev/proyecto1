@@ -1,0 +1,102 @@
+* {
+    font-family: "Cabin", sans-serif;
+    user-select: none;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    padding: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+body > div {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.tableHead {
+    width: 600px;
+    background: rgb(38, 50, 56);
+    display: flex;
+    align-items: center;
+    height: 80px;
+    justify-content: center;
+    border-radius: 10px 10px 0 0;
+    overflow: hidden;
+}
+
+.userInfo{
+    display: block;
+    position: relative;
+    top: 10px;
+}
+
+.tableTitle {
+    margin-top: 20px;
+    width: 600px;
+    padding: 20px 10px;
+}
+
+.tableTitle > h1,
+.tableTitle > p {
+    color: rgb(38, 50, 56);
+}
+
+.tableHead > h2 {
+    border-right: 2px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    width: 150px;
+    text-align: center;
+    font-size: 1.3em;
+}
+
+.tableHead > h2:last-child {
+    border-right: none;
+}
+
+ol {
+    background: rgb(220, 220, 220);
+}
+
+ol li {
+    display: flex;
+    width: 600px;
+    height: 50px;
+    align-items: center;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+    justify-content: center;
+}
+
+ol li:last-child {
+    border-bottom: none;
+}
+
+ol li div {
+    border-right: 2px solid rgba(0, 0, 0, 0.2);
+    width: 150px;
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: 400;
+    color: rgb(38, 50, 56);
+}
+
+ol li.empty{
+    background: rgb(239,83,80);
+}
+
+ol li.empty div{
+    color: white;``
+}
+
+ol li div:first-child {
+    font-weight: bold;
+}
+
+ol li div:last-child {
+    border-right: none;
+}

@@ -48,6 +48,7 @@ public class Signing extends XFrame {
             if(!pass.getData().equals(confirmPass.getData())) XAlert.showError("Error al crear", "Las contraseñas no coinciden.");
             else {
                 User userC = new User(user.getData(), name.getData(), pass.getData(), true);
+
                 signingController.addUser(userC);
             }
         };

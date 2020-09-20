@@ -17,4 +17,11 @@ public class Sell implements SalesModel {
       this.sizes = sizes;
       this.ivas = ivas;
     }
+
+    public float getTotal(){
+        float total = 0;
+        for(int index = 0; index < products.getSize(); index++)
+            total += products.get(index).price * Integer.parseInt(sizes.get(index));
+        return total;
+    }
 }

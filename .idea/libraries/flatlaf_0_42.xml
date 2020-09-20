@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="flatlaf-0.42">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libs/flatlaf-0.42.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/jfreechart-1.5.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

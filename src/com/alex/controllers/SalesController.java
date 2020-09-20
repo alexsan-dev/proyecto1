@@ -3,6 +3,7 @@ package com.alex.controllers;
 import com.alex.data.Product;
 import com.alex.data.Sell;
 import com.alex.structures.LinkedList;
+import com.alex.utils.Tools;
 
 public class SalesController {
     public LinkedList<Sell> dataList;
@@ -13,30 +14,6 @@ public class SalesController {
 
     public void addData(Sell data) {
         dataList.add(data);
-    }
-
-    private void orderArry(int[] arry){
-        for(int i = 0; i < arry.length - 1; i++) {
-            for(int j = 0; j < arry.length - 1; j++) {
-                if (arry[j] < arry[j + 1]) {
-                    int tmp = arry[j+1];
-                    arry[j+1] = arry[j];
-                    arry[j] = tmp;
-                }
-            }
-        }
-    }
-
-    private void orderArry(float[] arry){
-        for(int i = 0; i < arry.length - 1; i++) {
-            for(int j = 0; j < arry.length - 1; j++) {
-                if (arry[j] < arry[j + 1]) {
-                    float tmp = arry[j+1];
-                    arry[j+1] = arry[j];
-                    arry[j] = tmp;
-                }
-            }
-        }
     }
 
     public float getTotalIVA(){
@@ -66,7 +43,7 @@ public class SalesController {
         }
 
         // ORDENAR
-        orderArry(sizes);
+        Tools.orderArry(sizes);
         return sizes[0];
     }
 
@@ -83,7 +60,7 @@ public class SalesController {
         }
 
         // ORDENAR
-        orderArry(prices);
+         Tools.orderArry(prices);
         return prices[0];
     }
 

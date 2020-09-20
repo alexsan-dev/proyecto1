@@ -17,7 +17,7 @@ public class XPieChart {
         dts = new DefaultPieDataset();
 
         // PIE
-        JFreeChart jPieChart = ChartFactory.createPieChart(title, dts, true, true, false);
+        JFreeChart jPieChart = ChartFactory.createPieChart3D(title, dts, true, true, false);
 
         // PANEL
         chartPanel = new ChartPanel(jPieChart);

@@ -16,6 +16,16 @@ public class SigningController {
         this.defUser = new User("admin", "admin", "admin", false);
     }
 
+    public User findByUser(String userName){
+        User tmpUser = null;
+        for(int index = 0; index < userList.getSize(); index++)
+            if(userList.get(index).user.equals(userName)){
+                tmpUser = userList.get(index);
+                break;
+            }
+        return tmpUser;
+    }
+
     public User findByPassAndUser(String userName, String pass){
         User tmpUser = null;
         for(int index = 0; index < userList.getSize(); index++)

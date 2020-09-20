@@ -5,6 +5,7 @@ import com.alex.controllers.ProductController;
 import com.alex.controllers.SalesController;
 import com.alex.data.Product;
 import com.alex.structures.LinkedList;
+import com.alex.utils.Tools;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -115,24 +116,7 @@ public class ManageProducts extends XFrame {
         products.add("> 500" + "," + expensive);
 
         // CONTAR VENTAS
-        LinkedList<String> sales = new LinkedList<>();
-        for(int productsIndex = 0; productsIndex < productController.getSize(); productsIndex++){
-            // PRODUCTO
-            String name = productController.get(productsIndex).name;
-            int total = 0;
-
-            // BUSCAR
-            for(int salesIndex = 0; salesIndex < salesController.getSize(); salesIndex++){
-                for(int sPrIndex = 0; sPrIndex < salesController.get(salesIndex).products.getSize(); sPrIndex++){
-                    if(salesController.get(salesIndex).products.get(sPrIndex).name.equals(name)) {
-                        total += Integer.parseInt(salesController.get(salesIndex).sizes.get(sPrIndex));
-                    }
-                }
-            }
-
-            // AGREGAR
-            sales.add(name + "," + total);
-        }
+        LinkedList<String> prices = Tools.orderProducts(productController, salesController);
 
         // DATASET
         if(pieChart != null && barChart != null) {
@@ -147,9 +131,11 @@ public class ManageProducts extends XFrame {
             }
 
             // PIE
-            for(int dataIndex = 0; dataIndex < sales.getSize(); dataIndex++){
-                String[] vals = sales.get(dataIndex).split(",");
-                pieChart.setValue(vals[0], Integer.parseInt(vals[1]));
+            if(prices.getSize() >= 10) {
+                for (int dataIndex = 0; dataIndex < 10; dataIndex++) {
+                    String[] vals = prices.get(dataIndex).split(",");
+                    pieChart.setValue(vals[0], Integer.parseInt(vals[1]));
+                }
             }
         }
     }
