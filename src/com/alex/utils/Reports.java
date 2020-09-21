@@ -202,7 +202,7 @@ public class Reports {
             salesRep[0] = "10 Total de ventas";
             for(int index =0; index < Math.min(10, sales.getSize()); index++){
                 Sell cSell = sales.get(index);
-                salesRep[index + 1] = "Codigo: " + cSell.code + " NIT: " + cSell.nit + " Total: Q" + cSell.getTotal();
+                salesRep[index + 1] = "Código: " + cSell.code + " NIT: " + cSell.nit + " Total: Q" + cSell.getTotal();
             }
 
             // REPORTE DE VENTA
@@ -211,6 +211,6 @@ public class Reports {
             // REPORTES DE TABLAS
             generatePDF(pricesRep, "productos", PDRectangle.LETTER);
             generatePDF(salesRep, "ventas", PDRectangle.LETTER);
-        } else XAlert.showAlert("Error al crear", "No se encontro el codigo de venta");
+        } else XAlert.showAlert("Error al crear", "No se encontró el código de venta");
     }
 }

@@ -11,6 +11,8 @@ public class XFrame extends JFrame implements XFrameModel {
 
     public void setFrame(String name, int width, int height) {
         // AGREGAR ICONO Y COLOR
+        Image icon = Toolkit.getDefaultToolkit().getImage("./src/images/icon.png");
+        setIconImage(icon);
         setLayout(null);
         setBackground(new Color(220, 220, 220));
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

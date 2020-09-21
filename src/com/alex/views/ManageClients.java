@@ -194,7 +194,8 @@ public class ManageClients extends XFrame {
                 while(fileReader.hasNextLine()){
                     // CREAR OBJETO
                     String[] dataLine = fileReader.nextLine().split(",");
-                    Client data = new Client(dataLine[0], Integer.parseInt(dataLine[1]), dataLine[2].charAt(0), Integer.parseInt(dataLine[3]), dataLine[4]);
+                    String tmpImage = dataLine[4].startsWith("/home")?dataLine[4]:dataLine[4].startsWith("/")?"."+dataLine[4]:dataLine[4];
+                    Client data = new Client(dataLine[0], Integer.parseInt(dataLine[1]), dataLine[2].charAt(0), Integer.parseInt(dataLine[3]), tmpImage);
 
                     // VERIFICAR
                     if (clientController != null) {
@@ -340,7 +341,8 @@ public class ManageClients extends XFrame {
                 // VERIFICAR
                 else if (verifyLength && vNit) {
                     // AGREGAR CLIENTE
-                    Client data = new Client(name.getData(), Integer.parseInt(age.getData()), sex.getData().charAt(0), Integer.parseInt(nit.getData()), avatarURL[0]);
+                    String tmpImage = avatarURL[0].startsWith("/home")?avatarURL[0]:avatarURL[0].startsWith("/")?"."+avatarURL[0]:avatarURL[0];
+                    Client data = new Client(name.getData(), Integer.parseInt(age.getData()), sex.getData().charAt(0), Integer.parseInt(nit.getData()), tmpImage);
                     if (!update) clientController.addData(data);
                     else clientController.replaceData(finalInitialClient, data);
 

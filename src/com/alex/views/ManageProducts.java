@@ -206,7 +206,8 @@ public class ManageProducts extends XFrame {
                 while(fileReader.hasNextLine()){
                     // CREAR OBJETO
                     String[] dataLine = fileReader.nextLine().split(",");
-                    Product data = new Product(dataLine[0], Float.parseFloat(dataLine[1]), Integer.parseInt(dataLine[2]), dataLine[3]);
+                    String tmpImage = dataLine[3].startsWith("/home")?dataLine[3]:dataLine[3].startsWith("/")?"."+dataLine[3]:dataLine[3];
+                    Product data = new Product(dataLine[0], Float.parseFloat(dataLine[1]), Integer.parseInt(dataLine[2]), tmpImage);
 
                     // VERIFICAR
                     if (productController != null) {
@@ -352,7 +353,8 @@ public class ManageProducts extends XFrame {
                 // VERIFICAR
                 else if (verifyLength && vName) {
                     // AGREGAR CLIENTE
-                    Product data = new Product(name.getData(), Float.parseFloat(price.getData()), size.getData(), imageURL[0]);
+                    String tmpImage = imageURL[0].startsWith("/home")?imageURL[0]:imageURL[0].startsWith("/")?"."+imageURL[0]:imageURL[0];
+                    Product data = new Product(name.getData(), Float.parseFloat(price.getData()), size.getData(), tmpImage);
                     if (!update) productController.addData(data);
                     else productController.replaceData(finalInitialProduct, data);
 
